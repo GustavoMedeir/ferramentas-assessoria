@@ -21,10 +21,12 @@ var assets embed.FS
 // "atualizar" um binário que não corresponde a nenhuma release publicada.
 // Em produção é preenchida no build com:
 //
-//	wails build -ldflags "-X main.Version=2.2.0"
+//	wails build -ldflags "-X main.Version=1.00.02"
 //
 // (o valor deve bater com productVersion em wails.json — é o que vira a tag
-// da release no GitHub, ex. v2.2.0).
+// da release no GitHub, ex. v1.00.02). Esquema de versão MAJOR.MINOR.PATCH
+// — regra completa e exemplos em DOCUMENTACAO.md, seção "Atualização
+// automática".
 var Version = "dev"
 
 func main() {

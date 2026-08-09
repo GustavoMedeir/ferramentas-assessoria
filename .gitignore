@@ -1,4 +1,4 @@
-build/bin
+/build/
 node_modules
 frontend/dist
 
@@ -7,3 +7,10 @@ frontend/dist
 /rentabilidade.exe
 /programa pronto/
 *.pdf.bak-*
+
+# manual/documentação não vão pro repositório público — só uso local
+/DOCUMENTACAO.md
+/DOCUMENTACAO.pdf
+/MANUAL.md
+/MANUAL.pdf
+/docs/manual_html/
