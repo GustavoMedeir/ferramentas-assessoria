@@ -496,6 +496,16 @@ body {
 .input:focus, .select:focus { border-color: var(--primary); }
 .input::placeholder { color: var(--ink-2); }
 
+/* O Chromium não herda a cor do <select> pro popup de <option> — sem isso,
+   no tema escuro a lista abre com fundo/texto claro do sistema, ilegível
+   contra o resto da UI (bug real, reportado na Comparadora de Renda Fixa,
+   mas vale pra qualquer <select> do app — mesmas duas classes usadas em
+   todos, ver frontend/src/tabs/*.js e util/rendaFixa.js). */
+.select option, .cselect option {
+    background: var(--surface);
+    color: var(--ink);
+}
+
 .lookup { font-size: 12px; font-weight: 600; margin: 8px 0 2px; display: flex; align-items: center; gap: 6px; min-height: 16px; color: var(--ink-2); }
 .lookup.ok { color: var(--primary-600); }
 .lookup svg { width: 14px; height: 14px; }
