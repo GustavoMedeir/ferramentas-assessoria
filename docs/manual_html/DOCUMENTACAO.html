@@ -1,0 +1,186 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+<title>Ferramentas de Assessoria — Documentação Técnica</title><style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root{
+  --pine-950:#081f18; --pine-900:#0d2e26; --pine-800:#123a30;
+  --gold:#c9a86a; --gold-line:#d8bd8c; --terracotta:#b5653a;
+  --cream:#f2ead9; --cream-2:#efe7d6; --paper:#fffdf9;
+  --ink:#1c2b26; --ink-2:#5b6b64;
+  --coral:#c0503f; --coral-bg:#fbeceb; --coral-bar:#c0503f;
+  --olive:#8a7332; --olive-bg:#f7f0df; --olive-bar:#c9a86a;
+  --term-bg:#12201c; --term-ink:#dfe7e2; --term-comment:#7c9186;
+}
+*{box-sizing:border-box;}
+@page{size:210mm 297mm;margin:0;}
+html,body{margin:0;padding:0;}
+body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;color:var(--ink);background:var(--paper);font-size:13.5px;line-height:1.55;}
+.page{width:210mm;min-height:297mm;box-sizing:border-box;margin:0;padding:16mm 18mm;position:relative;background:var(--paper);page-break-after:always;}
+.page:last-child{page-break-after:auto;}
+h1,h2,h3,h4{font-family:"Fraunces",serif;margin:0;}
+p{margin:0 0 12px;}
+img{max-width:100%;display:block;}
+
+/* ---------- cover ---------- */
+.cover{
+  background:linear-gradient(165deg,var(--pine-800) 0%,var(--pine-900) 55%,var(--pine-950) 100%);
+  color:#f4efe3;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:0 80px;
+}
+.cover .icon{width:150px;height:150px;border-radius:34px;margin-bottom:34px;box-shadow:0 24px 60px rgba(0,0,0,.45);}
+.cover h1{font-size:38px;font-weight:700;color:#f7f3e8;letter-spacing:.2px;}
+.cover .subtitle{font-family:"Fraunces",serif;font-style:italic;font-size:19px;color:var(--gold);margin-top:10px;font-weight:500;}
+.cover .rule{width:74px;height:2px;background:var(--gold);margin:26px auto;border:none;opacity:.8;}
+.cover .meta{font-size:12.5px;color:#cfd8d1;line-height:1.9;}
+.cover .meta b{color:#efe6d3;}
+
+/* ---------- TOC ---------- */
+.toc-kicker{text-align:center;font-size:11px;letter-spacing:.22em;font-weight:700;color:var(--terracotta);margin-bottom:10px;}
+.toc-title{text-align:center;font-size:34px;color:var(--pine-900);letter-spacing:.04em;}
+.toc-flourish{display:flex;align-items:center;justify-content:center;gap:12px;margin:14px 0 40px;}
+.toc-flourish .l,.toc-flourish .r{height:1px;width:90px;background:var(--gold-line);}
+.toc-flourish .d{width:6px;height:6px;background:var(--gold);transform:rotate(45deg);}
+.toc-row{display:flex;gap:22px;align-items:baseline;padding:15px 0;border-bottom:1px solid var(--gold-line);}
+.toc-row .n{font-family:"Fraunces",serif;font-size:30px;color:var(--gold);width:52px;flex:none;font-weight:400;}
+.toc-row .t{flex:1;}
+.toc-row .t .ti{font-family:"Fraunces",serif;font-weight:700;font-size:15px;color:var(--pine-900);letter-spacing:.03em;text-transform:uppercase;}
+.toc-row .t .sub{font-size:12px;color:var(--terracotta);margin-top:2px;}
+
+/* ---------- section opener ---------- */
+.sec-head{display:flex;align-items:baseline;gap:18px;margin-bottom:8px;}
+.sec-num{font-family:"Fraunces",serif;font-weight:400;font-size:52px;color:var(--gold);line-height:1;}
+.sec-title{font-family:"Fraunces",serif;font-weight:700;font-size:25px;color:var(--pine-900);text-transform:uppercase;letter-spacing:.03em;}
+.sec-rule{height:1px;background:linear-gradient(90deg,var(--gold-line),var(--cream-2));margin:14px 0 28px;}
+
+.sub-h{font-family:"Plus Jakarta Sans",sans-serif;font-weight:800;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--terracotta);margin:26px 0 12px;}
+.sub-h:first-of-type{margin-top:0;}
+
+/* ---------- numbered steps ---------- */
+.steps{margin:14px 0;}
+.step{display:flex;gap:14px;margin-bottom:12px;align-items:flex-start;}
+.step .badge{flex:none;width:24px;height:24px;border:1.5px solid var(--gold);border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:"Fraunces",serif;font-weight:700;font-size:13px;color:var(--gold);margin-top:1px;}
+.step .txt{flex:1;padding-top:1px;}
+
+/* ---------- callouts ---------- */
+.box{background:var(--cream);border:1px solid var(--gold);border-radius:10px;margin:16px 0;overflow:hidden;}
+.box .bar{background:var(--pine-900);color:#f4efe3;font-weight:800;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;padding:9px 16px;}
+.box .body{padding:14px 18px;}
+.box.note .body{padding-top:16px;}
+.box .label{display:block;font-weight:800;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--terracotta);margin-bottom:6px;}
+.box.note{padding:0;}
+.box pre{margin:0;font-family:"JetBrains Mono",monospace;font-size:12px;line-height:1.7;white-space:pre-wrap;color:var(--ink);}
+
+.mono-chip{font-family:"JetBrains Mono",monospace;background:var(--cream-2);border:1px solid var(--gold-line);border-radius:5px;padding:1px 6px;font-size:12.5px;color:var(--pine-900);white-space:nowrap;}
+
+/* ---------- tables ---------- */
+table{width:100%;border-collapse:collapse;margin:14px 0;}
+thead th{background:var(--pine-900);color:#f4efe3;text-align:left;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:800;padding:10px 14px;}
+tbody td{padding:10px 14px;font-size:13px;vertical-align:top;}
+tbody tr:nth-child(odd){background:var(--cream-2);}
+tbody tr:nth-child(even){background:#fff;}
+tbody td:first-child{font-weight:700;color:var(--pine-900);}
+table + .table-rule{height:1px;background:var(--gold-line);margin-top:-8px;}
+
+/* ---------- screenshots ---------- */
+.shot{border:1.5px solid var(--gold);border-radius:10px;overflow:hidden;margin:18px 0 6px;box-shadow:0 6px 20px rgba(13,46,38,.08);}
+.shot img{display:block;width:100%;}
+.cap{text-align:center;font-family:"Fraunces",serif;font-style:italic;color:var(--terracotta);font-size:12.5px;margin-bottom:18px;}
+
+/* ---------- decisions/gotcha cards (doc) ---------- */
+.gcard{border-radius:8px;padding:12px 16px;margin:10px 0;border-left:4px solid;}
+.gcard.crit{background:var(--coral-bg);border-color:var(--coral-bar);}
+.gcard.info{background:var(--olive-bg);border-color:var(--olive-bar);}
+.gcard b{display:block;margin-bottom:3px;color:var(--pine-900);}
+
+/* ---------- code blocks (doc) ---------- */
+.code-light{background:#eef2ef;border-radius:9px;padding:14px 18px;margin:14px 0;font-family:"JetBrains Mono",monospace;font-size:10.6px;line-height:1.75;color:var(--ink);white-space:pre-wrap;word-break:break-word;}
+.code-light .cm{color:var(--ink-2);}
+.code-dark{background:var(--term-bg);border-radius:9px;padding:14px 18px;margin:14px 0;font-family:"JetBrains Mono",monospace;font-size:11.5px;line-height:1.85;color:var(--term-ink);white-space:pre-wrap;word-break:break-word;}
+.code-dark .cm{color:var(--term-comment);}
+
+/* ---------- flowchart (doc) ---------- */
+.flow{display:flex;flex-wrap:wrap;gap:12px;margin:16px 0;}
+.fbox{flex:1 1 200px;border:1px solid var(--gold-line);border-radius:9px;padding:12px 14px;background:#fff;}
+.fbox.dark{background:var(--pine-900);color:#f4efe3;border-color:var(--pine-900);}
+.fbox .ft{font-weight:800;font-size:12.5px;margin-bottom:3px;}
+.fbox .fs{font-size:11.5px;color:var(--ink-2);}
+.fbox.dark .fs{color:#c9d6cf;}
+.farrow{display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:18px;flex:0 0 20px;}
+
+ul.plain{margin:8px 0 14px;padding-left:20px;}
+ul.plain li{margin-bottom:6px;}
+
+.closing{position:absolute;bottom:16mm;left:18mm;right:18mm;text-align:center;}
+.closing .rule{height:1px;background:var(--gold-line);width:100%;margin-bottom:14px;}
+.closing .txt{font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--terracotta);font-weight:700;}
+.closing.plain .txt{color:var(--ink-2);letter-spacing:.04em;text-transform:none;font-weight:500;font-size:12px;}
+.closing.plain .rule{display:none;}
+</style></head><body>
+
+<div class="page cover">
+  <img class="icon" src="images/appicon.png">
+  <h1>Ferramentas de Assessoria</h1>
+  <div class="subtitle">Documentação Técnica</div>
+  <hr class="rule">
+  <div class="meta">Arquitetura, stack e decisões de implementação<br><b>Versão 2.2.0</b> · Julho de 2026<br>Gustavo Meireles — Assessoria de Investimentos XP</div>
+</div>
+<div class="page">
+  <div class="toc-kicker">FERRAMENTAS DE ASSESSORIA</div>
+  <div class="toc-title">SUMÁRIO</div>
+  <div class="toc-flourish"><span class="l"></span><span class="d"></span><span class="r"></span></div>
+  
+  <div class="toc-row">
+    <div class="n">1</div>
+    <div class="t"><div class="ti">Visão geral</div><div class="sub">o que o app faz</div></div>
+  </div>
+  <div class="toc-row">
+    <div class="n">2</div>
+    <div class="t"><div class="ti">Stack tecnológica</div><div class="sub"></div></div>
+  </div>
+  <div class="toc-row">
+    <div class="n">3</div>
+    <div class="t"><div class="ti">Estrutura do projeto</div><div class="sub"></div></div>
+  </div>
+  <div class="toc-row">
+    <div class="n">4</div>
+    <div class="t"><div class="ti">Fluxo principal — aba Rentabilidade</div><div class="sub"></div></div>
+  </div>
+  <div class="toc-row">
+    <div class="n">5</div>
+    <div class="t"><div class="ti">Decisões e armadilhas documentadas</div><div class="sub"></div></div>
+  </div>
+  <div class="toc-row">
+    <div class="n">6</div>
+    <div class="t"><div class="ti">Build e testes</div><div class="sub"></div></div>
+  </div>
+  <div class="toc-row">
+    <div class="n">7</div>
+    <div class="t"><div class="ti">Identidade visual</div><div class="sub"></div></div>
+  </div>
+</div><div class="page"><div class="sec-head"><div class="sec-num">1</div><div class="sec-title">Visão geral</div></div><div class="sec-rule"></div><p>Aplicativo desktop Windows que substitui a ferramenta antiga em Python — um conjunto de utilitários para assessores de investimento: leitura automatizada de relatórios XP, mensagens de rentabilidade, geração de e-mails de ordem, calculadoras financeiras e edição de PDF.</p><table><thead><tr><th>Aba</th><th>O que faz</th></tr></thead><tbody><tr><td>Rentabilidade</td><td>Lê os relatórios XPerformance da pasta, monta a mensagem de rentabilidade (mês/ano/12 meses) por cliente.</td></tr><tr><td>E-mails de Ordem</td><td>Monta o texto padronizado de ordem por produto (Renda Fixa, COE, Erro Operacional...).</td></tr><tr><td>Tabela de Deságio</td><td>Calcula e desenha a tabela de ágio/deságio de títulos como imagem.</td></tr><tr><td>Editor de PDF</td><td>Anota (desenho, texto, tarja, imagem, assinatura) um PDF existente.</td></tr><tr><td>Imagens em PDF</td><td>Junta N imagens escolhidas pelo usuário num único PDF novo.</td></tr><tr><td>Apresentação</td><td>Modo slideshow de um PDF/apresentação carregada, tela cheia.</td></tr><tr><td>Typeform</td><td>Formulário de coleta de dados do cliente durante a reunião.</td></tr><tr><td>Calculadora / Comparadora / Previdenciária / Compromissada / Aposentadoria</td><td>Calculadoras financeiras independentes, sem dependência dos relatórios.</td></tr></tbody></table><div class="table-rule"></div><div class="shot"><img src="images/rentabilidade_previa_12m.jpg"></div><div class="cap">A aba Rentabilidade: lista de clientes à esquerda, mensagem pronta à direita (dados ilustrativos).</div></div><div class="page"><div class="sec-head"><div class="sec-num">2</div><div class="sec-title">Stack tecnológica</div></div><div class="sec-rule"></div><table><thead><tr><th>Camada</th><th>Tecnologia</th><th>Por quê</th></tr></thead><tbody><tr><td>Backend</td><td>Go + Wails v2</td><td>binário nativo único, sem runtime externo pro usuário instalar</td></tr><tr><td>Frontend</td><td>JavaScript vanilla (sem framework)</td><td>app pequeno o bastante pra não precisar de build tooling extra</td></tr><tr><td>Leitura de PDF</td><td>go-pdfium (WASM via wazero)</td><td>extrai texto/renderiza páginas sem depender de cgo</td></tr><tr><td>Escrita de PDF</td><td>github.com/go-pdf/fpdf</td><td>monta PDF novo a partir de imagens (Editor de PDF e Imagens em PDF)</td></tr><tr><td>Banco de dados</td><td>SQLite (modernc.org/sqlite)</td><td>um arquivo por pasta de relatórios, sem servidor, sem cgo</td></tr><tr><td>Configuração</td><td>JSON em %APPDATA%</td><td>simples de inspecionar e fazer backup</td></tr></tbody></table><div class="table-rule"></div><div class="box note"><div class="body"><span class="label">Por que sem cgo?</span>cgo exige um compilador C configurado na máquina que builda o app — go-pdfium (WASM) e modernc.org/sqlite (Go puro) evitam essa dependência, então "go build" funciona em qualquer máquina com Go instalado, sem toolchain C.</div></div></div><div class="page"><div class="sec-head"><div class="sec-num">3</div><div class="sec-title">Estrutura do projeto</div></div><div class="sec-rule"></div><div class="code-light">rentabilidade/
+├── main.go                    <span class="cm"># entrypoint, redireciona stdio, inicia o Wails</span>
+├── app.go                     <span class="cm"># métodos expostos ao frontend (bindings Wails)</span>
+├── dto.go                     <span class="cm"># structs "wire" (JSON-safe) expostas ao frontend</span>
+├── config.go                  <span class="cm"># struct de preferências + leitura/escrita do config.json</span>
+├── internal/
+│   ├── pdfreport/              <span class="cm"># extração de dados dos relatórios XP (regex sobre o texto do PDF)</span>
+│   ├── rentabilidade/          <span class="cm"># banco SQLite, placeholders da mensagem, exportação CSV</span>
+│   ├── clientdb/               <span class="cm"># leitura da base de clientes (CSV)</span>
+│   ├── emailgen/                <span class="cm"># catálogo de categorias, monta o texto de e-mail de ordem</span>
+│   ├── pdfedit/                 <span class="cm"># monta um PDF novo a partir de páginas/imagens (fpdf)</span>
+│   ├── assinaturas/             <span class="cm"># imagens de assinatura salvas (Configurações → Assinatura)</span>
+│   └── whatsapp/                <span class="cm"># monta o link wa.me a partir do telefone</span>
+├── frontend/
+│   ├── src/
+│   │   ├── main.js              <span class="cm"># monta a sidebar, o roteamento entre abas, Configurações</span>
+│   │   ├── state.js             <span class="cm"># estado em memória compartilhado entre as abas</span>
+│   │   ├── tabs/                 <span class="cm"># um módulo por aba (mount(container, ctx))</span>
+│   │   └── ui/                   <span class="cm"># componentes (el/btn/...), ícones SVG, theme.css</span>
+│   └── wailsjs/                  <span class="cm"># bindings gerados (não editar à mão)</span>
+└── build/
+    ├── appicon.png               <span class="cm"># ícone-fonte, 1024×1024</span>
+    └── windows/icon.ico          <span class="cm"># gerado a partir do appicon.png</span></div></div><div class="page"><div class="sec-head"><div class="sec-num">4</div><div class="sec-title">Fluxo principal — aba Rentabilidade</div></div><div class="sec-rule"></div><div class="flow"><div class="fbox"><div class="ft">1. Boot</div><div class="fs">EstadoInicial() lê config + reabre última pasta</div></div><div class="farrow">&#8594;</div><div class="fbox"><div class="ft">2. Varredura</div><div class="fs">lista PDFs novos na pasta (glob)</div></div><div class="farrow">&#8594;</div><div class="fbox"><div class="ft">3. Extração</div><div class="fs">pdfreport: regex sobre o texto do PDF</div></div><div class="farrow">&#8594;</div><div class="fbox dark"><div class="ft">4. Dedup</div><div class="fs">por código de conta, fica o mais recente</div></div><div class="farrow">&#8594;</div><div class="fbox dark"><div class="ft">5. Junta com a base</div><div class="fs">código → nome/telefone do CSV</div></div><div class="farrow">&#8594;</div><div class="fbox"><div class="ft">6. Ordena por patrimônio</div><div class="fs">maior primeiro</div></div><div class="farrow">&#8594;</div><div class="fbox"><div class="ft">7. Mensagem</div><div class="fs">placeholders → texto final</div></div></div><div class="sub-h">4.1 Extração dos dados (internal/pdfreport)</div><p>O texto extraído do PDF passa por uma normalização (PDFium devolve U+00A0 em vez de espaço comum em vários pontos do relatório — sem isso os regexes não batem).</p><ul class='plain'><li>Código da conta é obrigatório — sem ele o arquivo vira uma falha de processamento.</li><li>As linhas <b>MÊS</b>, <b>ANO</b> e <b>12M</b> da tabela "RESUMO DE INFORMAÇÕES DA CARTEIRA" são lidas pelo mesmo padrão de regex genérico (<code>padraoLinhaResumo(rotulo)</code>), só trocando o rótulo — as três são obrigatórias (arquivo sem alguma delas vira falha de processamento).</li><li>Data de referência é opcional (usada pra desempate quando há PDFs duplicados do mesmo código).</li><li>Patrimônio total bruto é opcional — usado só pra ordenar a lista de clientes.</li></ul><div class="sub-h">4.2 Deduplicação por código</div><p>Quando duas leituras da pasta encontram arquivos diferentes com o mesmo código de conta (relatório baixado de novo, arquivo renomeado), só o de Data de Referência mais recente é devolvido pela lista de registros — o(s) mais antigo(s) fica(m) de fora por completo, inclusive da exportação CSV.</p><div class="sub-h">4.3 A lista de clientes (ListarClientes)</div><table><thead><tr><th>Situação</th><th>Onde aparece</th></tr></thead><tbody><tr><td>Código da base com relatório processado</td><td>Linha normal, com os dados do relatório</td></tr><tr><td>Código da base sem relatório (ou PDF com falha)</td><td>Linha em branco, ordenada por nome</td></tr><tr><td>Código de um relatório sem cliente correspondente na base</td><td>Linha extra no fim, só com o código</td></tr></tbody></table><div class="table-rule"></div><div class="sub-h">4.4 Mensagem final</div><p><span class="mono-chip">modelo_mensagem.txt</span> (um por pasta) guarda o texto com os placeholders. <span class="mono-chip">ValoresPlaceholder</span> resolve cada um: <span class="mono-chip">_Rent</span>, <span class="mono-chip">_RentA</span>, <span class="mono-chip">_Rent12M</span>, <span class="mono-chip">_Perc</span>, <span class="mono-chip">_PercA</span>, <span class="mono-chip">_Perc12M</span>, <span class="mono-chip">_CDI</span>, <span class="mono-chip">_CDIA</span>, <span class="mono-chip">_CDI12M</span>, <span class="mono-chip">_Nome</span> — os valores em R$/% já vêm formatados em pt-BR pelo backend (<span class="mono-chip">pdfreport.FormatarReais</span>/<span class="mono-chip">FormatarPercentual</span>), fonte única de verdade reaproveitada também pelo frontend (RegistroDTO carrega os campos já formatados, pra não duplicar a lógica em JS). "Copiar mensagem"/"Enviar WhatsApp" usam esse texto final; o WhatsApp abre via link wa.me.</p></div><div class="page"><div class="sec-head"><div class="sec-num">5</div><div class="sec-title">Decisões e armadilhas documentadas</div></div><div class="sec-rule"></div><p>Registro do "porquê" por trás de escolhas não óbvias — pra não redescobrir o mesmo problema duas vezes.</p><div class="gcard crit"><b>Redirecionamento de stdio é obrigatório</b>O .exe é uma aplicação GUI (sem console) — nesse caso o Windows não dá ao processo um handle válido de stdout/stderr. Bibliotecas que escrevem direto em os.Stdout (go-pdfium, wazero) travam/erram sem isso. <span class="mono-chip">main.go</span> redireciona os.Stdout/os.Stderr pra um arquivo de log antes de qualquer outra coisa rodar.</div><div class="gcard info"><b>Cache de compilação do WASM</b>Sem <span class="mono-chip">WithCompilationCache</span>, o wazero recompila o binário WASM do PDFium do zero toda vez que o app abre (~3,4s medido, interface "travada" na abertura). Com cache persistente em disco, só a primeira execução em cada máquina paga esse custo.</div><div class="gcard info"><b>PDFium inicializa sob demanda</b>O motor de PDF só é criado quando a primeira operação que precisa dele acontece (varrer uma pasta, abrir o Editor de PDF) — abrir o app sem nenhuma pasta configurada não paga esse custo de inicialização.</div><div class="gcard crit"><b>A ordem do texto extraído do PDF não é a ordem visual da página</b>PDFium devolve os "runs" de texto na ordem em que foram desenhados no PDF, que raramente bate com a ordem de leitura visual (colunas, tabelas). Os regexes de extração dependem de rótulos únicos e formato fixo (ver 4.1) justamente por isso — não dá pra confiar em posição/coordenada.</div><div class="gcard info"><b>Instância única do aplicativo</b>Um segundo clique no .exe traz a janela existente pra frente em vez de abrir outra — evita duas cópias do programa disputando o mesmo arquivo SQLite ao mesmo tempo.</div><div class="gcard info"><b>Migração de banco sem perda de dados</b>Colunas novas em <span class="mono-chip">rentabilidades.db</span> (ex.: as 3 do 12M) entram via <span class="mono-chip">ALTER TABLE</span> idempotente na abertura do banco — erro de "coluna já existe" é esperado e ignorado, então bancos antigos ganham a coluna nova sem perder o que já tinha.</div><div class="gcard info"><b>"R$" automático nos campos de valor (emailgen.Field.Moeda)</b>Campos de e-mail marcados <span class="mono-chip">Moeda: true</span> recebem o prefixo "R$ " automaticamente em <span class="mono-chip">ResolveValores</span> se o usuário não tiver digitado — só quando o campo não está vazio (não mexe no fallback "[Label]" nem em campo opcional vazio, e não duplica "R$" se o usuário já tiver digitado). Só existe pra campos que são exclusivamente um valor monetário — campos que aceitam quantidade ou texto livre (ex.: "Resgate Total") ficam de fora de propósito.</div><div class="gcard info"><b>EmailCompleto agora recebe o código da conta</b><span class="mono-chip">Category.EmailCompleto</span> (usado por Resgate Prev e Erro Operacional — modelos com texto 100% próprio, sem a introdução/fechamento padrão) só recebia o nome do cliente. O modelo "Erro Operacional" precisa também do código da conta na linha "Cliente: código - nome", então a assinatura passou a ser <span class="mono-chip">func(codigo, nome string, v map[string]string) string</span> — e de quebra, usar <span class="mono-chip">EmailCompleto</span> já garante "uma ordem por e-mail" de graça (mesma trava que Resgate Prev usa), sem precisar de nenhuma flag nova no catálogo.</div></div><div class="page"><div class="sec-head"><div class="sec-num">6</div><div class="sec-title">Build e testes</div></div><div class="sec-rule"></div><div class="code-dark">cd rentabilidade
+wails build              <span class="cm"># gera build/bin/FerramentasAssessoria.exe</span>
+wails dev                <span class="cm"># roda com hot-reload do frontend</span>
+go test ./...             <span class="cm"># testes de todos os pacotes Go</span></div><p>Os testes de integração contra um PDF real (extração completa, incluindo 12M) são pulados por padrão — apontar a variável de ambiente roda o fluxo completo:</p><div class="code-dark">PDFREPORT_TEST_PDF=&lt;caminho do PDF&gt; go test ./internal/... -v</div><p>A versão em <span class="mono-chip">wails.json</span> (campo "info") fica gravada nas propriedades do .exe — é o que aparece em Configurações → Sobre e no botão direito → Propriedades → Detalhes do Windows, o que também ajuda a passar confiança em máquinas onde o SmartScreen desconhece o binário.</p></div><div class="page"><div class="sec-head"><div class="sec-num">7</div><div class="sec-title">Identidade visual</div></div><div class="sec-rule"></div><p>O ícone é um "raiado" (sunburst): um leque de raios dourados convergindo para um ponto de luz, sobre um quadrado arredondado verde-pinho — remete tanto a um facho de luz guiando o assessor quanto ao gráfico de rentabilidade "para cima e para a direita".</p><div style="text-align:center;margin:22px 0 8px;"><img src="images/appicon.png" style="width:160px;margin:0 auto;border-radius:36px;box-shadow:0 16px 40px rgba(13,46,38,.18);"></div><div class="cap">Ícone em 1024×1024 — a mesma imagem-base de todos os tamanhos usados no Windows.</div><p>Todos os tamanhos (16 a 1024px, incluindo o .ico multi-resolução do Windows e a versão de 160px da barra lateral) são gerados programaticamente a partir dessa única imagem-fonte, com supersampling — sem depender de nenhuma ferramenta de design externa.</p><ul class='plain'><li>build/appicon.png — fonte única, 1024×1024</li><li>build/windows/icon.ico — multi-resolução, gerado a partir do appicon.png</li><li>Versão de 160px — usada no cabeçalho expandido da barra lateral</li></ul><div class="closing plain"><div class="rule"></div><div class="txt">Ferramentas de Assessoria — Documentação Técnica — v2.2.0</div></div></div>
+</body></html>

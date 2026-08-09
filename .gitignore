@@ -1,0 +1,9 @@
+build/bin
+node_modules
+frontend/dist
+
+# builds antigos soltos na pasta (não fazem parte do histórico — releases de
+# verdade vão como asset de GitHub Release, ver internal/selfupdate)
+/rentabilidade.exe
+/programa pronto/
+*.pdf.bak-*

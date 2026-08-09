@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apresentação Institucional</title>
+<!--
+  ===========================================================================
+  APRESENTAÇÃO INSTITUCIONAL — MODELO EDITÁVEL
+  ===========================================================================
+  Este é um arquivo HTML AUTOCONTIDO: todo o estilo (CSS) está aqui dentro,
+  e as imagens devem ser embutidas em base64 (veja o exemplo do logo abaixo).
+  Assim você tem UM arquivo só — dá pra copiar, mover e editar sem quebrar nada.
+
+  COMO EDITAR (sem programar):
+  - Cada slide é um bloco <section class="slide"> ... </section>.
+  - Troque os textos entre as tags pelos dados do seu escritório.
+  - Para adicionar um slide, copie um bloco <section class="slide"> inteiro
+    e cole depois do último, mudando o conteúdo.
+  - Para trocar o logo, gere o base64 da sua imagem (há sites gratuitos:
+    "image to base64") e cole no lugar do src do <img class="logo">.
+  - As cores ficam nas variáveis --verde / --verde-escuro logo abaixo.
+
+  COMO USAR NO APP:
+  - Abra o app > aba "Apresentação" > "Escolher apresentação" > selecione
+    este arquivo. Depois de editar, clique "Recarregar". Use "Tela cheia"
+    para apresentar ao cliente.
+
+  NAVEGAÇÃO: setas ← → do teclado, clique nas laterais, ou os pontinhos.
+  ===========================================================================
+-->
+<style>
+  :root{
+    --verde:#059669;
+    --verde-escuro:#0f3d3e;
+    --tinta:#12302b;
+    --tinta-2:#5b716b;
+    --fundo:#eef3f1;
+    --papel:#ffffff;
+    --linha:#dbe7e2;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{
+    font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+    background:var(--fundo);color:var(--tinta);
+    height:100vh;overflow:hidden;
+  }
+  .deck{position:relative;height:100vh;width:100%;}
+  .slide{
+    position:absolute;inset:0;
+    display:none;flex-direction:column;justify-content:center;
+    padding:8vh 10vw;
+    opacity:0;transition:opacity .35s ease;
+  }
+  .slide.ativo{display:flex;opacity:1;}
+
+  /* Slide de capa */
+  .slide.capa{
+    background:linear-gradient(135deg,var(--verde-escuro),var(--verde));
+    color:#fff;align-items:flex-start;
+  }
+  .slide.capa .logo{
+    width:78px;height:78px;border-radius:20px;background:rgba(255,255,255,.15);
+    display:flex;align-items:center;justify-content:center;
+    font-size:34px;font-weight:800;margin-bottom:34px;border:1px solid rgba(255,255,255,.25);
+  }
+  .slide.capa h1{font-size:clamp(32px,5vw,60px);line-height:1.05;font-weight:800;max-width:16ch;}
+  .slide.capa p{font-size:clamp(16px,2vw,22px);margin-top:20px;opacity:.9;max-width:40ch;}
+  .slide.capa .assinatura{margin-top:auto;font-size:15px;opacity:.85;}
+
+  /* Slides de conteúdo */
+  .eyebrow{
+    color:var(--verde);font-weight:700;font-size:14px;letter-spacing:.08em;
+    text-transform:uppercase;margin-bottom:14px;
+  }
+  .slide h2{font-size:clamp(26px,3.6vw,44px);line-height:1.12;font-weight:800;max-width:20ch;}
+  .slide .lead{font-size:clamp(16px,1.9vw,21px);color:var(--tinta-2);margin-top:18px;max-width:52ch;line-height:1.55;}
+
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:40px;}
+  .card{
+    background:var(--papel);border:1px solid var(--linha);border-radius:16px;
+    padding:26px 22px;box-shadow:0 6px 20px rgba(16,48,43,.06);
+  }
+  .card .ico{font-size:30px;margin-bottom:12px;}
+  .card h3{font-size:18px;font-weight:700;margin-bottom:8px;}
+  .card p{font-size:14.5px;color:var(--tinta-2);line-height:1.5;}
+
+  .numeros{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:44px;}
+  .num b{display:block;font-size:clamp(34px,5vw,56px);font-weight:800;color:var(--verde);line-height:1;}
+  .num span{display:block;margin-top:10px;font-size:15px;color:var(--tinta-2);}
+
+  ul.lista{margin-top:30px;list-style:none;display:flex;flex-direction:column;gap:16px;}
+  ul.lista li{
+    font-size:clamp(16px,1.9vw,20px);padding-left:34px;position:relative;color:var(--tinta);
+  }
+  ul.lista li::before{
+    content:"";position:absolute;left:0;top:.35em;width:18px;height:18px;border-radius:50%;
+    background:var(--verde);box-shadow:0 0 0 5px rgba(5,150,105,.15);
+  }
+
+  .slide.contato{background:var(--verde-escuro);color:#fff;}
+  .slide.contato h2{color:#fff;}
+  .slide.contato .lead{color:rgba(255,255,255,.85);}
+  .slide.contato .vias{margin-top:36px;display:flex;flex-direction:column;gap:12px;font-size:18px;}
+  .slide.contato .vias span{opacity:.75;margin-right:10px;}
+
+  /* Controles */
+  .zona{position:absolute;top:0;bottom:0;width:18%;cursor:pointer;z-index:5;}
+  .zona.esq{left:0;} .zona.dir{right:0;}
+  .pontos{
+    position:absolute;bottom:26px;left:50%;transform:translateX(-50%);
+    display:flex;gap:10px;z-index:6;
+  }
+  .pontos button{
+    width:10px;height:10px;border-radius:50%;border:none;cursor:pointer;padding:0;
+    background:rgba(18,48,43,.22);transition:all .2s;
+  }
+  .pontos button.on{background:var(--verde);transform:scale(1.3);}
+  .slide.capa ~ .pontos button,
+  body.escuro-atual .pontos button{background:rgba(255,255,255,.35);}
+  .contador{
+    position:absolute;bottom:24px;right:28px;font-size:13px;color:var(--tinta-2);z-index:6;
+    background:rgba(255,255,255,.7);padding:4px 10px;border-radius:20px;
+  }
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+  <!-- ================= SLIDE 1 — CAPA ================= -->
+  <section class="slide capa">
+    <!-- Para usar seu logo real, troque este bloco por:
+         <img class="logo" src="data:image/png;base64,COLE_AQUI"> -->
+    <div class="logo">GM</div>
+    <h1>Gustavo Meireles<br>Assessoria de Investimentos</h1>
+    <p>Planejamento financeiro e acompanhamento próximo para você investir com clareza e tranquilidade.</p>
+    <div class="assinatura">Escritório credenciado XP Investimentos</div>
+  </section>
+
+  <!-- ================= SLIDE 2 — QUEM SOMOS ================= -->
+  <section class="slide">
+    <div class="eyebrow">Quem somos</div>
+    <h2>Uma assessoria que começa pelo seu objetivo, não pelo produto</h2>
+    <p class="lead">Antes de qualquer recomendação, entendemos o seu momento de vida, seus planos e o seu perfil. A carteira é a consequência disso — construída para o que <em>você</em> quer alcançar.</p>
+    <div class="cards">
+      <div class="card"><div class="ico">🎯</div><h3>Objetivo primeiro</h3><p>Metas de curto, médio e longo prazo guiam cada decisão.</p></div>
+      <div class="card"><div class="ico">🤝</div><h3>Relação próxima</h3><p>Acompanhamento contínuo e um assessor sempre acessível.</p></div>
+      <div class="card"><div class="ico">🔍</div><h3>Total transparência</h3><p>Você entende onde está investido e por quê.</p></div>
+    </div>
+  </section>
+
+  <!-- ================= SLIDE 3 — NÚMEROS ================= -->
+  <section class="slide">
+    <div class="eyebrow">Nossa estrutura</div>
+    <h2>Uma plataforma completa ao seu lado</h2>
+    <div class="numeros">
+      <div class="num"><b>+800</b><span>fundos e produtos disponíveis na plataforma</span></div>
+      <div class="num"><b>24/7</b><span>acesso à sua carteira pelo app, quando quiser</span></div>
+      <div class="num"><b>1 a 1</b><span>atendimento personalizado, sem call center</span></div>
+    </div>
+    <p class="lead">Os números acima são exemplos — edite este arquivo e coloque os dados do seu escritório.</p>
+  </section>
+
+  <!-- ================= SLIDE 4 — COMO TRABALHAMOS ================= -->
+  <section class="slide">
+    <div class="eyebrow">Como trabalhamos</div>
+    <h2>Um processo simples, do primeiro contato ao acompanhamento</h2>
+    <ul class="lista">
+      <li><strong>Diagnóstico:</strong> entendemos sua situação atual e seus objetivos.</li>
+      <li><strong>Proposta:</strong> montamos uma estratégia sob medida para o seu perfil.</li>
+      <li><strong>Execução:</strong> organizamos os investimentos de forma clara e segura.</li>
+      <li><strong>Acompanhamento:</strong> revisões periódicas e ajustes quando fizer sentido.</li>
+    </ul>
+  </section>
+
+  <!-- ================= SLIDE 5 — CONTATO ================= -->
+  <section class="slide contato">
+    <div class="eyebrow" style="color:#7fe8cf">Vamos conversar</div>
+    <h2>Pronto para dar o próximo passo?</h2>
+    <p class="lead">Marque uma conversa sem compromisso. O primeiro passo é entender onde você quer chegar.</p>
+    <div class="vias">
+      <div><span>E-mail</span> Gutomeireles@hotmail.com</div>
+      <div><span>Telefone</span> (00) 00000-0000</div>
+      <div><span>Site</span> seusite.com.br</div>
+    </div>
+  </section>
+
+  <!-- Controles (não edite) -->
+  <div class="zona esq" onclick="anterior()"></div>
+  <div class="zona dir" onclick="proximo()"></div>
+  <div class="pontos" id="pontos"></div>
+  <div class="contador" id="contador"></div>
+</div>
+
+<script>
+  // Navegação de slides — não precisa editar.
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const pontos = document.getElementById('pontos');
+  const contador = document.getElementById('contador');
+  let atual = 0;
+
+  slides.forEach((_, i) => {
+    const b = document.createElement('button');
+    b.addEventListener('click', () => ir(i));
+    pontos.appendChild(b);
+  });
+
+  function ir(i){
+    atual = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach((s, k) => s.classList.toggle('ativo', k === atual));
+    Array.from(pontos.children).forEach((p, k) => p.classList.toggle('on', k === atual));
+    // Pontos claros sobre slides de fundo escuro (capa/contato).
+    document.body.classList.toggle('escuro-atual', slides[atual].matches('.capa, .contato'));
+    contador.textContent = (atual + 1) + ' / ' + slides.length;
+  }
+  function proximo(){ ir(atual + 1); }
+  function anterior(){ ir(atual - 1); }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); proximo(); }
+    if (e.key === 'ArrowLeft'  || e.key === 'PageUp') { e.preventDefault(); anterior(); }
+    if (e.key === 'Home') ir(0);
+    if (e.key === 'End') ir(slides.length - 1);
+  });
+
+  ir(0);
+</script>
+</body>
+</html>

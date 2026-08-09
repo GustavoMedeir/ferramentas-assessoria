@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ferramentas de Assessoria (mockup da UI)</title>
+<!--
+  MOCKUP ESTÁTICO DA INTERFACE — arquivo autocontido pra edição visual.
+  Atualizado em 17/07/2026 pra refletir o estado atual do app real (aba
+  Compromissada, Comparador de Renda Fixa na Calculadora, e as abas de
+  Configurações Visão/Recorte da imagem/Sobre).
+
+  Este arquivo replica a UI do app real (Go + Wails) com dados de exemplo
+  fixos e sem nenhuma lógica de backend. O CSS abaixo é uma cópia de
+  frontend/src/ui/theme.css (mesmas classes, mesmas variáveis por tema/
+  acento) e a estrutura HTML corresponde ao que os módulos JS geram em
+  frontend/src/tabs/*.js e frontend/src/main.js — então uma edição visual
+  aqui usa exatamente os nomes de classe que o app real usa, o que facilita
+  portar a mudança de volta.
+
+  O que funciona aqui (só pra navegar o mockup, não é lógica real):
+  - trocar de aba na sidebar
+  - alternar Prévia/Modelo na Rentabilidade
+  - abrir/fechar o popup de Configurações e trocar de seção nele
+  - clicar num tema/acento já troca a aparência na hora (no app real isso
+    só aplica depois de "Confirmar" — aqui é instantâneo só pra facilitar
+    o preview enquanto edita)
+  Todo o resto (botões de ação, campos) é estático de propósito.
+
+  Depois de editar o visual aqui, me manda o arquivo de volta que eu porto
+  as mudanças pro app.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;600;700&family=Roboto:wght@400;500;700&family=Open+Sans:wght@400;600;700&family=Lato:wght@400;700&family=Montserrat:wght@400;600;700&family=Poppins:wght@400;500;600;700&family=Nunito:wght@400;600;700&family=Raleway:wght@400;600;700&family=Work+Sans:wght@400;600;700&family=Source+Sans+3:wght@400;600;700&family=Manrope:wght@400;600;700&family=DM+Sans:wght@400;500;700&family=Rubik:wght@400;500;700&family=Mulish:wght@400;600;700&family=Figtree:wght@400;600;700&family=Outfit:wght@400;600;700&family=Sora:wght@400;600;700&family=Space+Grotesk:wght@400;500;700&family=Jost:wght@400;500;600&family=Karla:wght@400;600;700&display=swap" rel="stylesheet"/>
+<style>
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { font-family: "Plus Jakarta Sans", system-ui, sans-serif; font-size: 14px; color: #12302b; background: #eef3f1; }
+.mono { font-family: "JetBrains Mono", ui-monospace, monospace; }
+
+.app {
+    --bg: #eef3f1; --surface: #fff; --surface-2: #f4f9f7; --inset: #eef4f2;
+    --sidebar: #0e4a43; --sidebar-ink: #eafaf6; --sidebar-muted: rgba(233, 250, 246, .62); --sidebar-active: rgba(255, 255, 255, .14);
+    --ink: #12302b; --ink-2: #5b716b; --line: #dbe7e2; --line-2: #e8f0ed;
+    --primary: #0d9488; --primary-600: #0f766e; --primary-ink: #fff; --primary-soft: #e2f4ef; --primary-soft-line: #bfe6dc;
+    --pos: #0f766e; --neg: #d64545; --neg-soft: #fbe9e9; --warn: #b06a12; --warn-soft: #fbf0dd;
+    --radius: 14px; --fs: 14px; --card-pad: 18px; --font-ui: "Plus Jakarta Sans", system-ui, sans-serif;
+    --shadow: 0 1px 2px rgba(16, 48, 43, .05), 0 1px 3px rgba(16, 48, 43, .05);
+    --shadow-lg: 0 10px 30px rgba(16, 48, 43, .12);
+    position: relative; display: grid; grid-template-columns: 80px 1fr; height: 100vh; width: 100%;
+    overflow: hidden; font-size: var(--fs); font-family: var(--font-ui); color: var(--ink); background: var(--bg);
+}
+.dark {
+    --bg: #0a1315; --surface: #111f21; --surface-2: #16282b; --inset: #0e1a1c;
+    --sidebar: #081513; --sidebar-ink: #eafaf6; --sidebar-muted: rgba(233, 250, 246, .5); --sidebar-active: rgba(255, 255, 255, .1);
+    --ink: #e8f2ef; --ink-2: #8ba7a1; --line: #22383b; --line-2: #1b2d30;
+    --primary: #2dd4bf; --primary-600: #5eead4; --primary-ink: #042420; --primary-soft: rgba(45, 212, 191, .15); --primary-soft-line: rgba(45, 212, 191, .32);
+    --pos: #5eead4; --neg: #f28d8d; --neg-soft: rgba(242, 141, 141, .13); --warn: #e8c86a; --warn-soft: rgba(232, 200, 106, .12);
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3); --shadow-lg: 0 10px 30px rgba(0, 0, 0, .45);
+}
+.acc-esmeralda { --primary: #059669; --primary-600: #047857; --pos: #047857; --primary-soft: #e2f4ef; --primary-soft-line: #bfe6dc; --sidebar: #0b3f2f; }
+.acc-teal { --primary: #0d9488; --primary-600: #0f766e; --pos: #0f766e; --primary-soft: #e0f2f1; --primary-soft-line: #b8e2df; --sidebar: #0e4a43; }
+.acc-aqua { --primary: #06b6d4; --primary-600: #0891b2; --pos: #0891b2; --primary-soft: #e0f7fb; --primary-soft-line: #b6e9f2; --sidebar: #0a3d47; }
+.acc-petroleo { --primary: #0f3d3e; --primary-600: #0a2e2f; --pos: #0a2e2f; --primary-soft: #e2ebea; --primary-soft-line: #c3d4d2; --sidebar: #0c2f30; }
+.dark.acc-esmeralda { --primary: #34d399; --primary-600: #6ee7b7; --pos: #34d399; --primary-soft: rgba(52, 211, 153, .15); --primary-soft-line: rgba(52, 211, 153, .32); --sidebar: #06160f; }
+.dark.acc-teal { --primary: #2dd4bf; --primary-600: #5eead4; --pos: #2dd4bf; --primary-soft: rgba(45, 212, 191, .15); --primary-soft-line: rgba(45, 212, 191, .32); --sidebar: #081513; }
+.dark.acc-aqua { --primary: #22d3ee; --primary-600: #67e8f9; --pos: #22d3ee; --primary-soft: rgba(34, 211, 238, .15); --primary-soft-line: rgba(34, 211, 238, .32); --sidebar: #05141a; }
+.dark.acc-petroleo { --primary: #2f6f6e; --primary-600: #5c9997; --pos: #4d8886; --primary-soft: rgba(47, 111, 110, .18); --primary-soft-line: rgba(47, 111, 110, .35); --sidebar: #07161a; }
+
+.app svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+.side { position: absolute; top: 0; left: 0; bottom: 0; width: 80px; z-index: 30; background: var(--sidebar); color: var(--sidebar-ink); display: flex; flex-direction: column; padding: 18px 14px; overflow-x: hidden; overflow-y: auto; transition: width .18s ease; }
+.side:hover { width: 250px; box-shadow: var(--shadow-lg); }
+.brand-txt, .navitem .t { opacity: 0; max-width: 0; overflow: hidden; transition: opacity .12s ease, max-width .18s ease; }
+.navlbl { opacity: 0; transition: opacity .12s ease; }
+.side:hover .brand-txt, .side:hover .navitem .t { opacity: 1; max-width: 200px; }
+.side:hover .navlbl { opacity: 1; }
+.side:hover .brand { gap: 11px; justify-content: flex-start; }
+.side:hover .navitem { gap: 12px; justify-content: flex-start; }
+.brand { display: flex; align-items: center; justify-content: center; gap: 0; padding: 4px 6px 18px; white-space: nowrap; overflow: hidden; }
+.brand-mark { width: 36px; height: 36px; border-radius: 11px; background: linear-gradient(140deg, #2dd4bf, #0d9488); display: grid; place-items: center; color: #04211d; font-weight: 800; font-size: 14px; letter-spacing: .02em; }
+.brand-name { font-weight: 800; font-size: 14.5px; color: #fff; line-height: 1.2; white-space: normal; }
+.navlbl { font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--sidebar-muted); padding: 14px 8px 7px; white-space: nowrap; }
+.nav { display: flex; flex-direction: column; gap: 6px; }
+.navitem { display: flex; align-items: center; justify-content: center; gap: 0; padding: 12px 11px; border-radius: 11px; color: var(--sidebar-ink); opacity: .82; background: none; border: none; border-left: 3px solid transparent; cursor: pointer; font: inherit; font-weight: 600; font-size: 13.5px; text-align: left; width: 100%; white-space: nowrap; overflow: hidden; }
+.navitem svg { width: 19px; height: 19px; }
+.navitem:hover { background: rgba(255, 255, 255, .07); opacity: 1; }
+.navitem.on { background: var(--sidebar-active); opacity: 1; border-left-color: var(--primary); color: #fff; }
+.side-foot { margin-top: auto; display: flex; flex-direction: column; gap: 6px; padding-top: 14px; border-top: 1px solid rgba(255, 255, 255, .09); }
+
+.main { grid-column: 2; display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
+.hdr { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px 16px; padding: 20px 24px 15px; flex: none; flex-wrap: wrap; }
+.hdr-l { flex: 1 1 240px; min-width: 200px; }
+.hdr-t { font-size: 21px; font-weight: 800; letter-spacing: -.02em; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hdr-sub { font-size: 13px; color: var(--ink-2); margin-top: 3px; font-weight: 500; }
+.hdr-r { display: flex; align-items: center; gap: 8px; flex: none; flex-wrap: wrap; justify-content: flex-end; }
+.chip { display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); color: var(--ink-2); font-size: 12.5px; font-weight: 600; max-width: 320px; }
+.chip svg { width: 15px; height: 15px; color: var(--primary-600); }
+.chip .path { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.btn { display: inline-flex; align-items: center; gap: 7px; padding: 9px 14px; border-radius: 11px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; font-weight: 600; font-size: 13px; cursor: pointer; white-space: nowrap; }
+.btn svg { width: 16px; height: 16px; }
+.btn:hover { background: var(--surface-2); border-color: var(--primary-soft-line); }
+.btn.pri { background: var(--primary); border-color: var(--primary); color: var(--primary-ink); }
+.btn.pri:hover { filter: brightness(1.06); background: var(--primary); }
+.btn.ghost { background: transparent; border-color: transparent; color: var(--ink-2); }
+.btn.ghost:hover { background: var(--surface-2); color: var(--ink); }
+.btn.danger { color: var(--neg); border-color: transparent; background: transparent; padding: 6px 11px; font-size: 12.5px; }
+.btn.danger:hover { background: var(--neg-soft); }
+.btn:disabled { opacity: .5; cursor: default; pointer-events: none; }
+.content { flex: 1; min-height: 0; overflow: hidden; padding: 8px 28px 22px; display: flex; }
+.seg { display: inline-flex; background: var(--inset); border: 1px solid var(--line); border-radius: 11px; padding: 3px; gap: 2px; }
+.seg-b { border: none; background: none; padding: 7px 16px; border-radius: 8px; font: inherit; font-weight: 600; font-size: 12.5px; color: var(--ink-2); cursor: pointer; }
+.seg-b.on { background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
+
+.rent, .mail, .des { display: flex; gap: 18px; width: 100%; flex: 1; min-height: 0; }
+.calc, .prev-secao, .comp-secao { width: 100%; flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 26px; padding-right: 4px; }
+
+.rlist { width: 330px; flex: none; display: flex; flex-direction: column; min-height: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; }
+.rlist-h { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 12px; }
+.rlist-h h3 { margin: 0; font-size: 14px; font-weight: 700; }
+.count { font-size: 12px; color: var(--ink-2); font-weight: 600; }
+.search { display: flex; align-items: center; gap: 9px; background: var(--inset); border: 1px solid var(--line); border-radius: 11px; padding: 10px 12px; margin-bottom: 10px; }
+.search svg { width: 16px; height: 16px; color: var(--ink-2); }
+.search input { flex: 1; background: none; border: none; outline: none; font: inherit; font-size: 13px; color: var(--ink); }
+.clients { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; margin: 0 -6px; padding: 2px 6px; }
+.client { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 13px; border-radius: 11px; border: 1.5px solid transparent; cursor: pointer; background: none; font: inherit; text-align: left; width: 100%; color: var(--ink); }
+.client:hover { background: var(--surface-2); }
+.client.sel { background: var(--primary-soft); border-color: var(--primary-soft-line); }
+.cid { flex: 1; min-width: 0; }
+.cname { display: block; font-weight: 700; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ccode { display: block; font-size: 11.5px; color: var(--ink-2); margin-top: 1px; }
+.cright { display: flex; align-items: center; gap: 9px; flex: none; }
+.cval { font-size: 13px; font-weight: 700; color: var(--pos); }
+.cval.neg { color: var(--neg); }
+.badge { padding: 3px 9px; border-radius: 999px; font-size: 9.5px; font-weight: 800; letter-spacing: .04em; background: var(--inset); color: var(--ink-2); }
+.badge.copied { background: var(--primary-soft); color: var(--primary-600); }
+
+.rpanel { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.rpanel-h { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.who { font-size: 13px; color: var(--ink-2); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.who-wrap { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.who-wrap .btn { flex: none; }
+.rpanel-body { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
+.preview { flex: 1; min-height: 0; overflow-y: auto; padding: 24px 26px; font-size: 15.5px; line-height: 1.95; white-space: pre-wrap; }
+.pill-val { display: inline-block; padding: 2px 9px; border-radius: 8px; background: var(--primary-soft); color: var(--primary-600); font-family: "JetBrains Mono", monospace; font-weight: 700; font-size: 13.5px; border: 1px solid var(--primary-soft-line); }
+.rfoot { display: flex; justify-content: flex-end; gap: 8px; padding-top: 13px; flex: none; }
+.legend { display: grid; grid-template-columns: auto 1fr 1fr; gap: 9px 12px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 15px 18px; margin-bottom: 12px; flex: none; }
+.col-h { font-size: 10.5px; font-weight: 700; color: var(--ink-2); text-transform: uppercase; letter-spacing: .05em; text-align: center; }
+.rlbl { font-size: 12.5px; color: var(--ink-2); font-weight: 600; }
+.ph { padding: 6px 11px; border-radius: 8px; border: 1px solid var(--primary-soft-line); background: var(--primary-soft); color: var(--primary-600); font-family: "JetBrains Mono", monospace; font-size: 12px; font-weight: 700; cursor: pointer; justify-self: center; }
+.editor { flex: 1; min-height: 0; width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px 22px; font: inherit; font-size: 15.5px; line-height: 1.9; color: var(--ink); resize: none; outline: none; box-shadow: var(--shadow); }
+
+.mail-l { width: 466px; flex: none; display: flex; flex-direction: column; min-height: 0; }
+.mail-r { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.mail-r-h { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.mail-r-h h3 { margin: 0; font-size: 14px; font-weight: 700; }
+.field-lbl { font-size: 12px; color: var(--ink-2); font-weight: 600; margin: 14px 0 6px; }
+.input, .select { width: 100%; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font: inherit; font-size: 13px; outline: none; }
+.ops-h { font-weight: 700; font-size: 13px; margin: 18px 0 9px; display: flex; align-items: center; justify-content: space-between; }
+.ops { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 13px; padding: 2px; margin: 0 -2px; }
+.op { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; }
+.op-h { display: flex; align-items: center; gap: 9px; font-weight: 700; font-size: 12.5px; color: var(--ink); margin-bottom: 11px; }
+.op-num { width: 23px; height: 23px; border-radius: 8px; background: var(--primary-soft); display: grid; place-items: center; font-size: 11px; font-weight: 800; color: var(--primary-600); }
+.op-selects { display: flex; gap: 8px; margin-bottom: 2px; }
+.op-selects .select { flex: 1; }
+.warn { display: flex; gap: 9px; align-items: flex-start; background: var(--warn-soft); color: var(--warn); font-size: 11.5px; font-weight: 600; padding: 10px 12px; border-radius: 10px; margin-top: 11px; line-height: 1.45; }
+.warn svg { width: 16px; height: 16px; margin-top: 1px; }
+.op-foot { display: flex; justify-content: flex-end; margin-top: 9px; }
+.mail-foot { display: flex; flex-direction: column; gap: 9px; padding-top: 13px; flex: none; }
+.mail-foot .btn { justify-content: center; }
+.email-out { flex: 1; min-height: 0; width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px 22px; font-family: "JetBrains Mono", monospace; font-size: 13px; line-height: 1.8; color: var(--ink); resize: none; outline: none; box-shadow: var(--shadow); }
+
+.des-l { width: 360px; flex: none; display: flex; flex-direction: column; min-height: 0; }
+.des-r { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.des-foot { display: flex; justify-content: flex-end; gap: 8px; padding-top: 13px; flex: none; }
+.table-card { flex: 1; min-height: 0; overflow: auto; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); display: flex; align-items: flex-start; }
+.dtable { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 13px; }
+.dtable th { background: var(--primary-600); color: #fff; font-weight: 700; text-align: left; padding: 12px 16px; white-space: nowrap; }
+.dtable th:first-child { border-top-left-radius: 10px; }
+.dtable th:last-child { border-top-right-radius: 10px; }
+.dtable td { padding: 12px 16px; border-bottom: 1px solid var(--line-2); color: var(--ink); white-space: nowrap; }
+.dtable tr:last-child td { border-bottom: none; }
+.dtable td + td { border-left: 1px solid var(--line-2); }
+.dtable th + th { border-left: 1px solid rgba(255, 255, 255, .16); }
+
+.cat { display: flex; flex-direction: column; gap: 12px; }
+.cat-h { display: flex; align-items: center; gap: 9px; font-size: 11px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-2); }
+.cat-h .line { flex: 1; height: 1px; background: var(--line); }
+.cat-h svg { width: 15px; height: 15px; color: var(--primary-600); }
+.calc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+.ccard { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: var(--card-pad); box-shadow: var(--shadow); display: flex; flex-direction: column; }
+.ccard h4 { margin: 0 0 13px; font-size: 13px; font-weight: 700; line-height: 1.35; padding-bottom: 11px; border-bottom: 1px solid var(--line-2); }
+.crow { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 6px 0; font-size: 12.5px; }
+.clbl { color: var(--ink-2); min-width: 0; }
+.clbl-wrap { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.cwrap { display: flex; align-items: center; gap: 7px; flex: none; }
+.cinput { width: 120px; background: var(--primary-soft); border: 1px solid var(--primary-soft-line); border-radius: 8px; color: var(--ink); padding: 6px 9px; font-family: "JetBrains Mono", monospace; font-size: 12.5px; text-align: right; outline: none; }
+.csuffix { color: var(--ink-2); font-size: 11px; white-space: nowrap; }
+.period-switch { display: inline-flex; border: 1px solid var(--primary-soft-line); border-radius: 7px; overflow: hidden; flex: none; }
+.period-btn { border: none; background: var(--primary-soft); color: var(--ink-2); font: inherit; font-weight: 700; font-size: 10.5px; padding: 5px 8px; cursor: pointer; }
+.period-btn + .period-btn { border-left: 1px solid var(--primary-soft-line); }
+.period-btn.on { background: var(--primary); color: #fff; }
+.falha-lista { display: flex; flex-direction: column; gap: 8px; max-height: 320px; overflow-y: auto; }
+.falha-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--inset); }
+.falha-item svg { width: 16px; height: 16px; color: var(--neg); flex: none; margin-top: 2px; }
+.falha-arquivo { font-weight: 700; font-family: "JetBrains Mono", monospace; font-size: 12px; word-break: break-all; }
+.falha-erro { color: var(--ink-2); font-size: 12px; margin-top: 3px; }
+.cout { font-weight: 800; text-align: right; white-space: nowrap; color: var(--primary-600); font-family: "JetBrains Mono", monospace; font-size: 13px; }
+.cout.pos { color: var(--pos); }
+.cout.neg { color: var(--neg); }
+
+.prev { display: flex; align-items: flex-start; gap: 16px; }
+.prev-inputs { flex: none; width: 380px; }
+.prev-resultado { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+.prev-inputs .crow { flex-direction: column; align-items: stretch; gap: 6px; }
+.prev-inputs .cwrap, .prev-inputs .cinput { width: 100%; }
+.prev-table { table-layout: fixed; }
+.prev-table th, .prev-table td { padding: 9px 14px; font-size: 13px; }
+.prev-table th:first-child, .prev-table td.prev-lbl { width: 32%; }
+.prev-table td.prev-lbl { white-space: normal; line-height: 1.3; }
+.prev-table td.prev-val { text-align: right; font-family: "JetBrains Mono", monospace; }
+.prev-table tr.prev-total td { font-weight: 800; color: var(--primary-600); border-top: 1px solid var(--line-2); }
+.prev-diag { font-size: 12.5px; color: var(--ink-2); line-height: 1.5; }
+.prev-diag-economia { font-weight: 600; color: var(--ink); }
+.crow.total { margin-top: 7px; padding-top: 11px; border-top: 1px solid var(--line-2); }
+
+.statusbar { flex: none; padding: 10px 24px; border-top: 1px solid var(--line); color: var(--ink-2); font-size: 12px; display: flex; align-items: center; gap: 9px; background: var(--surface); font-weight: 500; }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--primary); }
+
+.modal-fundo { position: fixed; inset: 0; background: rgba(18, 48, 43, .35); display: flex; align-items: center; justify-content: center; z-index: 100; }
+.modal-fundo[hidden] { display: none; }
+
+.cfg-caixa { position: relative; width: 640px; max-width: 92vw; padding: 0; white-space: normal; display: flex; overflow: hidden; height: 480px; max-height: 85vh; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow-lg); }
+.cfg-close { position: absolute; top: 12px; right: 12px; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 8px; border: none; background: none; color: var(--ink-2); cursor: pointer; z-index: 1; }
+.cfg-close:hover { background: var(--surface-2); color: var(--ink); }
+.cfg-close svg { width: 16px; height: 16px; }
+.cfg-nav { width: 168px; flex: none; background: var(--inset); border-right: 1px solid var(--line); padding: 14px 10px; display: flex; flex-direction: column; gap: 3px; }
+.cfg-nav-item { display: flex; align-items: center; gap: 9px; padding: 10px 11px; border-radius: 9px; border: none; background: none; color: var(--ink-2); font: inherit; font-weight: 600; font-size: 13px; text-align: left; cursor: pointer; }
+.cfg-nav-item:hover { background: var(--surface-2); color: var(--ink); }
+.cfg-nav-item.on { background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
+.cfg-nav-item svg { width: 16px; height: 16px; }
+.cfg-body { flex: 1; min-width: 0; padding: 22px 24px; overflow-y: auto; }
+.cfg-h { font-size: 15px; font-weight: 800; margin: 0 0 4px; }
+.cfg-sub { font-size: 12.5px; color: var(--ink-2); margin: 0 0 18px; }
+.cfg-grp { margin-bottom: 22px; }
+.cfg-grp-lbl { font-size: 11px; font-weight: 700; color: var(--ink-2); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 10px; }
+.theme-opts { display: flex; gap: 12px; }
+.theme-opt { flex: 1; border: 2px solid var(--line); border-radius: 12px; padding: 10px; cursor: pointer; background: var(--surface); display: flex; flex-direction: column; gap: 8px; align-items: center; }
+.theme-opt.on { border-color: var(--primary); }
+.theme-opt-swatch { width: 100%; height: 52px; border-radius: 8px; border: 1px solid var(--line-2); }
+.theme-opt-swatch.claro { background: linear-gradient(135deg, #eef3f1 60%, #fff 60%); }
+.theme-opt-swatch.escuro { background: linear-gradient(135deg, #0a1315 60%, #111f21 60%); }
+.theme-opt-lbl { font-size: 12.5px; font-weight: 700; }
+.acc-opts { display: flex; gap: 12px; }
+.acc-opt { flex: 1; border: 2px solid var(--line); border-radius: 12px; padding: 10px; cursor: pointer; background: var(--surface); display: flex; flex-direction: column; gap: 8px; align-items: center; }
+.acc-opt.on { border-color: var(--primary); }
+.acc-opt-swatch { width: 32px; height: 32px; border-radius: 50%; }
+.acc-opt-lbl { font-size: 12.5px; font-weight: 700; }
+.cfg-placeholder { color: var(--ink-2); font-size: 13px; line-height: 1.6; }
+.cfg-confirm-row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; }
+.theme-opt:has(.cfg-placeholder) { align-items: flex-start; text-align: left; }
+.cfg-secao[hidden] { display: none; }
+
+/* ---------- Compromissada ---------- */
+.comp { display: flex; align-items: flex-start; gap: 16px; }
+.comp-inputs { flex: none; width: 360px; }
+.comp-inputs .crow { flex-direction: column; align-items: stretch; gap: 6px; }
+.comp-inputs .cwrap, .comp-inputs .cinput { width: 100%; }
+.comp-resultado { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+.chart-card { gap: 10px; }
+.chart-canvas-wrap { width: 100%; position: relative; }
+.chart-legend { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 6px; }
+.legend-item { display: flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: var(--surface-2); border-radius: 999px; padding: 4px 10px 4px 8px; font-size: 11.5px; font-weight: 600; color: var(--ink); cursor: pointer; font: inherit; }
+.legend-item.off { opacity: .45; text-decoration: line-through; }
+.legend-swatch { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+.comp-destaque-valor { font-size: 15px; font-weight: 700; color: var(--ink); }
+.comp-destaque-valor.pos { color: var(--pos); }
+.comp-table-wrap { overflow-x: auto; }
+.comp-row-cruzamento td { background: var(--primary-soft); }
+
+/* ---------- Comparador de Renda Fixa ---------- */
+.cmp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px; }
+.cmp-winner { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary), var(--shadow); }
+.cmp-badge { display: inline-block; font-size: 10.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; color: var(--primary-ink); background: var(--primary); border-radius: 999px; padding: 3px 10px; margin-bottom: 10px; }
+.cselect { width: 120px; background: var(--primary-soft); border: 1px solid var(--primary-soft-line); border-radius: 8px; color: var(--ink); padding: 6px 9px; font-family: inherit; font-size: 12.5px; outline: none; }
+
+/* ---------- Recorte da imagem (Configurações) ---------- */
+.recorte-preview-wrap { margin-bottom: 14px; }
+.recorte-imgwrap { position: relative; width: 100%; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; user-select: none; }
+.recorte-caixa { position: absolute; box-sizing: border-box; border: 2px solid var(--primary); background: transparent; cursor: move; }
+.recorte-handle { position: absolute; width: 12px; height: 12px; box-sizing: border-box; background: var(--primary); border: 2px solid var(--surface); border-radius: 50%; }
+.recorte-handle-nw { left: -7px; top: -7px; cursor: nwse-resize; }
+.recorte-handle-se { right: -7px; bottom: -7px; cursor: nwse-resize; }
+.recorte-handle-ne { right: -7px; top: -7px; cursor: nesw-resize; }
+.recorte-handle-sw { left: -7px; bottom: -7px; cursor: nesw-resize; }
+.recorte-campos { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px; margin-bottom: 6px; }
+
+/* ============ v2: menos denso, mais hierarquia ============ */
+.hdr { padding: 22px 28px 16px; }
+.hdr-t { font-size: 22px; }
+.content { padding-top: 6px; }
+.menu-wrap { position: relative; }
+.btn.icon { padding: 9px 11px; }
+.btn.icon svg { width: 18px; height: 18px; }
+.menu { position: absolute; top: calc(100% + 6px); right: 0; z-index: 40; min-width: 196px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow-lg); padding: 6px; display: flex; flex-direction: column; gap: 2px; }
+.menu[hidden] { display: none; }
+.menu-item { display: flex; align-items: center; gap: 10px; padding: 9px 11px; border-radius: 9px; border: none; background: none; color: var(--ink); font: inherit; font-weight: 600; font-size: 13px; text-align: left; cursor: pointer; white-space: nowrap; }
+.menu-item svg { width: 16px; height: 16px; color: var(--ink-2); }
+.menu-item:hover { background: var(--surface-2); }
+.menu-item.danger { color: var(--neg); }
+.menu-item.danger svg { color: var(--neg); }
+.menu-sep { height: 1px; background: var(--line-2); margin: 4px 2px; }
+.chip.soft { background: transparent; border-color: transparent; color: var(--ink-2); padding-left: 2px; }
+
+.calc-grid.rf { grid-template-columns: minmax(320px, 400px) 1fr; align-items: start; }
+.rf-res { display: flex; flex-direction: column; }
+.rf-hero { display: flex; flex-direction: column; gap: 3px; padding: 2px 0 14px; border-bottom: 1px solid var(--line-2); margin-bottom: 10px; }
+.rf-hero-lbl { font-size: 12px; color: var(--ink-2); font-weight: 600; }
+.rf-hero-val { font-family: "JetBrains Mono", monospace; font-size: 27px; font-weight: 800; color: var(--pos); letter-spacing: -.02em; }
+.rf-hero-sub { font-size: 12.5px; color: var(--ink-2); }
+.rf-hero-sub b { color: var(--pos); font-weight: 800; }
+.detail-toggle { margin-top: 12px; align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; background: none; border: none; color: var(--primary-600); font: inherit; font-weight: 700; font-size: 12.5px; cursor: pointer; padding: 4px 2px; }
+.detail-toggle svg { width: 15px; height: 15px; transition: transform .15s ease; }
+.detail-toggle.open svg { transform: rotate(180deg); }
+.rf-detail { margin-top: 6px; padding-top: 8px; border-top: 1px dashed var(--line); }
+.rf-detail[hidden] { display: none; }
+
+.cmp2 { padding: 0; overflow: hidden; }
+.cmp2-verdict { display: flex; align-items: center; gap: 11px; padding: 15px 18px; background: var(--primary-soft); border-bottom: 1px solid var(--primary-soft-line); }
+.cmp2-verdict svg { width: 20px; height: 20px; color: var(--primary-600); fill: var(--primary-600); stroke: none; flex: none; }
+.cmp2-verdict-txt { font-size: 13.5px; font-weight: 600; color: var(--ink); line-height: 1.4; }
+.cmp2-verdict-txt b { color: var(--primary-600); font-weight: 800; }
+.cmp2-tbl { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; min-width: 460px; }
+.cmp2-tbl th, .cmp2-tbl td { padding: 11px 18px; text-align: right; white-space: nowrap; }
+.cmp2-tbl thead th { font-size: 13px; font-weight: 800; color: var(--ink); border-bottom: 1px solid var(--line); }
+.cmp2-tbl th:first-child, .cmp2-tbl td:first-child { text-align: left; color: var(--ink-2); font-weight: 600; }
+.cmp2-tbl tbody td:not(:first-child) { font-family: "JetBrains Mono", monospace; color: var(--ink); }
+.cmp2-tbl td { border-bottom: 1px solid var(--line-2); }
+.cmp2-tbl tbody tr:last-child td { border-bottom: none; }
+.cmp2-tbl .win { background: var(--primary-soft); }
+.cmp2-tbl thead .win { color: var(--primary-600); }
+.cmp2-col-tag { display: inline-block; font-size: 9px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--primary-ink); background: var(--primary); border-radius: 999px; padding: 2px 7px; margin-left: 7px; vertical-align: middle; }
+.cmp2-tbl tr.hi td:not(:first-child) { font-weight: 800; color: var(--primary-600); }
+.cmp2-tbl tr.hi td:first-child { color: var(--ink); font-weight: 700; }
+
+.font-picker { display: flex; gap: 14px; align-items: stretch; }
+.font-list { flex: none; width: 210px; max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; border: 1px solid var(--line); border-radius: 10px; padding: 6px; background: var(--surface); }
+.font-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 9px 10px; border-radius: 8px; border: none; background: none; cursor: pointer; font-size: 13.5px; font-weight: 600; color: var(--ink); text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.font-row:hover { background: var(--surface-2); }
+.font-row.on { background: var(--primary-soft); color: var(--primary-600); }
+.font-row-tag { flex: none; font-family: "Plus Jakarta Sans", sans-serif; font-size: 8.5px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--primary-600); }
+.font-preview { flex: 1; min-width: 0; border: 1px solid var(--line); border-radius: 10px; padding: 20px 22px; background: var(--surface-2); display: flex; flex-direction: column; gap: 10px; justify-content: center; }
+.font-preview-eyebrow { font-size: 10.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-2); }
+.font-preview-title { font-size: 23px; font-weight: 800; letter-spacing: -.02em; color: var(--ink); }
+.font-preview-sub { font-size: 14px; line-height: 1.65; color: var(--ink); }
+.font-preview-sub b { color: var(--pos); font-weight: 800; }
+.font-preview-num { font-size: 24px; font-weight: 800; color: var(--primary-600); font-family: "JetBrains Mono", monospace; }
+.font-preview-num span { font-size: 12.5px; font-weight: 600; color: var(--ink-2); margin-left: 6px; font-family: "Plus Jakarta Sans", sans-serif; }
+.tab-secao[hidden] { display: none !important; }
+
+/* Comparadora (aba própria) */
+.cmpx-secao { width: 100%; flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 26px; padding-right: 4px; }
+.cmpx { display: flex; align-items: flex-start; gap: 16px; width: 100%; }
+.cmpx-inputs { flex: none; width: 340px; display: flex; flex-direction: column; gap: 14px; }
+.cmpx-inputs .crow { flex-direction: column; align-items: stretch; gap: 6px; }
+.cmpx-inputs .cwrap { width: 100%; }
+.cmpx-inputs .cinput, .cmpx-inputs .cselect { width: 100%; }
+.cmpx-result { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+
+/* Previdenciária mais legível */
+.prev-table .th-tag { display: inline-block; margin-left: 6px; font-size: 9px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; background: rgba(255,255,255,.22); color: #fff; border-radius: 999px; padding: 2px 7px; vertical-align: middle; }
+.prev-secao .prev-table tbody tr:not(.grp) td:last-child { background: var(--primary-soft); }
+.prev-table tr.grp td { background: var(--surface-2); font-size: 10.5px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-2); padding: 10px 16px 6px; }
+.prev-secao .prev-table { min-width: 620px; }
+
+/* v3: coluna de dias compacta na Compromissada/Aposentadoria */
+.comp-secao .prev-table th:first-child, .comp-secao .prev-table td:first-child { width: 40px; text-align: center; padding-left: 12px; padding-right: 6px; color: var(--ink-2); }
+.comp-secao .prev-table th:nth-child(2), .comp-secao .prev-table td:nth-child(2) { white-space: nowrap; width: 92px; }
+
+/* v3: botao Limpar por tela de calculadora */
+.calc-toolbar { display: flex; align-items: center; justify-content: flex-end; }
+.btn-limpar { display: inline-flex; align-items: center; gap: 7px; padding: 8px 13px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink-2); font: inherit; font-weight: 600; font-size: 12.5px; cursor: pointer; }
+.btn-limpar svg { width: 15px; height: 15px; }
+.btn-limpar:hover { color: var(--neg); border-color: var(--neg); background: var(--neg-soft); }
+
+/* v3: personalizacao avancada (Beta) */
+.beta-head { display: flex; align-items: center; gap: 8px; }
+.beta-badge { font-size: 9px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--warn); background: var(--warn-soft); border-radius: 999px; padding: 2px 7px; }
+.beta-toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 13px 15px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2); }
+.beta-toggle-txt { font-size: 12.5px; color: var(--ink-2); line-height: 1.45; }
+.beta-toggle-txt b { color: var(--ink); font-weight: 700; }
+.beta-switch { flex: none; width: 44px; height: 26px; border-radius: 999px; border: none; background: var(--line); cursor: pointer; position: relative; transition: background .15s ease; }
+.beta-switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0, 0, 0, .25); transition: transform .15s ease; }
+.beta-switch.on { background: var(--primary); }
+.beta-switch.on::after { transform: translateX(18px); }
+.beta-panel { margin-top: 12px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.beta-panel[hidden] { display: none; }
+.beta-color { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.beta-color input[type="color"] { -webkit-appearance: none; appearance: none; width: 26px; height: 26px; border: none; border-radius: 7px; background: none; cursor: pointer; padding: 0; flex: none; }
+.beta-color input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+.beta-color input[type="color"]::-webkit-color-swatch { border: 1px solid var(--line-2); border-radius: 7px; }
+.beta-color input[type="color"]::-moz-color-swatch { border: 1px solid var(--line-2); border-radius: 7px; }
+.beta-color-lbl { font-size: 12px; font-weight: 600; color: var(--ink); }
+.beta-actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; }
+</style>
+</head>
+<body>
+<div class="app acc-esmeralda" id="app">
+
+  <div class="side">
+    <div class="brand">
+      <div class="brand-mark">FA</div>
+      <div class="brand-txt"><div class="brand-name">Ferramentas de Assessoria</div></div>
+    </div>
+    <div class="navlbl">Ferramentas</div>
+    <div class="nav">
+      <button class="navitem on" data-tab="rent"><svg viewBox="0 0 24 24"><path d="M4.5 16a7.5 7.5 0 0 1 15 0"/><path d="M12 16l4-6"/><circle cx="12" cy="16" r="1.3"/></svg><span class="t">Rentabilidade</span></button>
+      <button class="navitem" data-tab="mail"><svg viewBox="0 0 24 24"><path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v4h4"/><path d="M9 13h6M9 16.5h6"/></svg><span class="t">E-mails de Ordem</span></button>
+      <button class="navitem" data-tab="des"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="13" height="13" rx="2"/><path d="M3 10h13M8 10v8"/><path d="M19 14v6m0 0l-2.3-2.3M19 20l2.3-2.3"/></svg><span class="t">Tabela de Deságio</span></button>
+      <button class="navitem" data-tab="calc"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 12h.01M12 12h.01M16 12h.01M8 16h.01M12 16h.01M16 16h.01"/></svg><span class="t">Calculadora</span></button>
+      <button class="navitem" data-tab="cmp"><svg viewBox="0 0 24 24"><path d="M3 12h6"/><path d="M6 8l3 4-3 4"/><path d="M21 12h-6"/><path d="M18 8l-3 4 3 4"/></svg><span class="t">Comparadora</span></button>
+      <button class="navitem" data-tab="prev"><svg viewBox="0 0 24 24"><path d="M5 13a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v1.5a1.5 1.5 0 0 1-1.5 1.5H17l-.7 2.5h-2L14 16h-4l-.3 2H8l-.7-2.5H6.5A1.5 1.5 0 0 1 5 14.5z"/><circle cx="15.5" cy="10.5" r="1"/><path d="M8.5 8V6"/></svg><span class="t">Calculadora Previdenciária</span></button>
+      <button class="navitem" data-tab="comp"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><path d="M10 6.5v3.5l2.5 1.5"/><circle cx="18" cy="17" r="3.6"/><path d="M16.5 17h3"/></svg><span class="t">Compromissada</span></button>
+      <button class="navitem" data-tab="apos"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg><span class="t">Planejamento de Aposentadoria</span></button>
+    </div>
+    <div class="side-foot">
+      <button class="navitem" id="btn-base"><svg viewBox="0 0 24 24"><circle cx="8.5" cy="8" r="3"/><path d="M3 20c0-3.5 2.5-5.6 5.5-5.6s5.5 2.1 5.5 5.6"/><circle cx="17" cy="9" r="2.4"/><path d="M15.3 14.5c2.6.5 4.2 2.4 4.2 5.5"/></svg><span class="t">Base de clientes</span></button>
+      <button class="navitem" id="btn-config"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg><span class="t">Configurações</span></button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="hdr">
+      <div class="hdr-l">
+        <h1 class="hdr-t" id="hdr-titulo">Rentabilidade</h1>
+        <div class="hdr-sub" id="hdr-sub">Selecione um cliente para revisar e copiar a mensagem</div>
+      </div>
+      <div class="hdr-r" id="hdr-r">
+        <span class="chip soft"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span class="path">...\Relatorios\Rentabilidade</span></span>
+        <button class="btn"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>Atualizar</button>
+        <div class="menu-wrap">
+          <button class="btn icon" id="hdr-mais" title="Mais ações"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg></button>
+          <div class="menu" id="hdr-menu" hidden>
+            <button class="menu-item"><svg viewBox="0 0 24 24"><path d="M12 3v12"/><path d="M8 11l4 4 4-4"/><path d="M4 21h16"/></svg>Exportar CSV</button>
+            <button class="menu-item"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Trocar pasta</button>
+            <div class="menu-sep"></div>
+            <button class="menu-item danger"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3m-9 0 1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/></svg>Limpar tudo</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ===================== Rentabilidade ===================== -->
+      <section class="rent tab-secao" data-tab="rent">
+        <div class="rlist">
+          <div class="rlist-h"><h3>Clientes</h3><span class="count">103 de 103</span></div>
+          <div class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input type="text" placeholder="Buscar nome ou número..."/></div>
+          <div class="clients">
+            <button class="client sel">
+              <span class="cid"><span class="cname">Luciany Scotta Loss</span><span class="ccode mono">11159379</span></span>
+              <span class="cright"><span class="badge copied">COPIADO</span><span class="cval">R$ 305,91</span></span>
+            </button>
+            <button class="client">
+              <span class="cid"><span class="cname">Claudia Santos</span><span class="ccode mono">11591073</span></span>
+              <span class="cright"><span class="badge">GERADO</span><span class="cval">R$ 918,02</span></span>
+            </button>
+            <button class="client">
+              <span class="cid"><span class="cname">Mateus de Barros</span><span class="ccode mono">12027456</span></span>
+              <span class="cright"><span class="badge">GERADO</span><span class="cval neg">-R$ 1.347,86</span></span>
+            </button>
+            <button class="client">
+              <span class="cid"><span class="cname">Priscilla Araújo</span><span class="ccode mono">12653419</span></span>
+              <span class="cright"><span class="badge">GERADO</span><span class="cval neg">-R$ 146,67</span></span>
+            </button>
+            <button class="client">
+              <span class="cid"><span class="cname">Rogério Segóvia</span><span class="ccode mono">13027585</span></span>
+              <span class="cright"><span class="badge">GERADO</span><span class="cval">R$ 827,06</span></span>
+            </button>
+          </div>
+        </div>
+        <div class="rpanel">
+          <div class="rpanel-h">
+            <div class="seg"><button class="seg-b on">Prévia</button><button class="seg-b">Modelo</button></div>
+            <div class="who-wrap">
+              <span class="who">Luciany Scotta Loss (11159379)</span>
+              <button class="btn ghost"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>Enviar WhatsApp</button>
+            </div>
+          </div>
+          <div class="rpanel-body">
+            <div class="card preview">boa tarde <span class="pill-val">Luciany Scotta Loss</span>
+
+Em junho sua carteira teve uma rentabilidade de <span class="pill-val">R$ 305,91</span>, equivalente a <span class="pill-val">2,14%</span> no mês (<span class="pill-val">118%</span> do CDI).
+
+No acumulado do ano, o resultado foi de <span class="pill-val">R$ 2.480,10</span>, ou <span class="pill-val">9,87%</span> (<span class="pill-val">104%</span> do CDI).
+
+Qualquer dúvida, seguimos à disposição.</div>
+            <div class="rfoot">
+              <button class="btn"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M21 15l-5-5-8 8"/></svg>Copiar imagem</button>
+              <button class="btn pri"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Copiar mensagem</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== E-mails de Ordem ===================== -->
+      <section class="mail tab-secao" data-tab="mail" hidden>
+        <div class="mail-l">
+          <div class="field-lbl">Código do cliente</div>
+          <input class="input" value="11159379"/>
+          <div class="field-lbl">Nome do cliente</div>
+          <input class="input" value="Luciany Scotta Loss"/>
+          <div class="field-lbl">Produto</div>
+          <select class="select"><option>Renda Fixa</option></select>
+          <div class="field-lbl">Tipo de movimentação</div>
+          <select class="select"><option>Aplicação</option></select>
+
+          <div class="ops-h">Operações <button class="btn ghost"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Adicionar operação</button></div>
+          <div class="ops">
+            <div class="op">
+              <div class="op-h"><span class="op-num">1</span>CDB Banco XP 118% CDI</div>
+              <div class="field-lbl">Valor aplicado</div>
+              <input class="input" value="R$ 50.000,00"/>
+              <div class="field-lbl">Taxa de negociação</div>
+              <input class="input" value="118% do CDI"/>
+              <div class="field-lbl">Carência</div>
+              <input class="input" value="30 dias"/>
+              <div class="op-foot"><button class="btn danger"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3m-9 0 1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/></svg>Remover</button></div>
+            </div>
+          </div>
+          <div class="mail-foot"><button class="btn pri">Gerar e-mail</button></div>
+        </div>
+        <div class="mail-r">
+          <div class="mail-r-h"><h3>E-mail gerado</h3><button class="btn"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Copiar texto</button></div>
+          <textarea class="email-out" readonly>Prezado(a) Luciany Scotta Loss, tudo bem?
+
+Conforme conversamos, seguem os detalhes da operação para sua ciência e confirmação:
+
+- Produto: CDB Banco XP 118% CDI
+- Valor aplicado: R$ 50.000,00
+- Taxa de negociação: 118% do CDI
+- Carência: 30 dias
+
+Fico à disposição para dúvidas.</textarea>
+        </div>
+      </section>
+
+      <!-- ===================== Tabela de Deságio ===================== -->
+      <section class="des tab-secao" data-tab="des" hidden>
+        <div class="des-l">
+          <div class="ops-h">Títulos</div>
+          <div class="ops">
+            <div class="op">
+              <div class="op-h"><span class="op-num">1</span>Título</div>
+              <div class="field-lbl">Nome do título</div>
+              <input class="input" value="CRA Cosan"/>
+              <div class="field-lbl">Valor atual</div>
+              <input class="input" value="1.050,00"/>
+              <div class="field-lbl">Valor de saída</div>
+              <input class="input" value="1.000,00"/>
+            </div>
+          </div>
+          <div class="mail-foot"><button class="btn ghost"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Adicionar título</button></div>
+        </div>
+        <div class="des-r">
+          <div class="mail-r-h"><h3>Tabela de deságio</h3></div>
+          <div class="table-card">
+            <table class="dtable">
+              <thead><tr><th>Título</th><th>Valor Atual</th><th>Valor de Saída</th><th>Deságio (R$)</th><th>Deságio (%)</th></tr></thead>
+              <tbody>
+                <tr><td>CRA Cosan</td><td>R$ 1.050,00</td><td>R$ 1.000,00</td><td>R$ 50,00</td><td>4,76%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="des-foot">
+            <button class="btn"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M21 15l-5-5-8 8"/></svg>Copiar imagem</button>
+            <button class="btn"><svg viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7"/><rect x="8" y="13" width="8" height="5" rx="1"/></svg>Salvar imagem</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== Calculadora ===================== -->
+      <section class="calc tab-secao" data-tab="calc" hidden>
+        <div class="calc-toolbar"><button class="btn-limpar" type="button"><svg viewBox="0 0 24 24"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>Limpar</button></div>
+        <div class="cat">
+          <div class="cat-h"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>Planejamento de metas<span class="line"></span></div>
+          <div class="calc-grid">
+            <div class="ccard">
+              <h4>Quanto tempo para atingir certo valor?</h4>
+              <div class="crow"><span class="clbl">Aporte inicial</span><div class="cwrap"><input class="cinput" value="R$ 0,00"/></div></div>
+              <div class="crow"><span class="clbl">Aportes mensais</span><div class="cwrap"><input class="cinput" value="R$ 0,00"/></div></div>
+              <div class="crow"><span class="clbl">Valor almejado</span><div class="cwrap"><input class="cinput" value="R$ 0,00"/></div></div>
+              <div class="crow"><span class="clbl">Rendimento</span><div class="cwrap"><input class="cinput" value="0,00"/><span class="csuffix">ao mês</span></div></div>
+              <div class="crow total"><span class="clbl">Tempo necessário</span><span class="cout">0 meses</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="cat">
+          <div class="cat-h"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M17 7h4v4"/></svg>Projeção de valores<span class="line"></span></div>
+          <div class="calc-grid">
+            <div class="ccard">
+              <h4>Qual rentabilidade futura?</h4>
+              <div class="crow"><span class="clbl">Aplicação</span><div class="cwrap"><input class="cinput" value="R$ 0,00"/></div></div>
+              <div class="crow"><span class="clbl">Taxa ao mês</span><div class="cwrap"><input class="cinput" value="0,00"/></div></div>
+              <div class="crow"><span class="clbl">Prazo</span><div class="cwrap"><input class="cinput" value="0"/><span class="csuffix">meses</span></div></div>
+              <div class="crow total"><span class="clbl">Valor bruto</span><span class="cout">R$ 0,00</span></div>
+              <div class="crow"><span class="clbl">Valor líquido</span><span class="cout">R$ 0,00</span></div>
+            </div>
+            <div class="ccard">
+              <h4>Cobertura do FGC</h4>
+              <div class="crow"><span class="clbl">Taxa contratada</span><div class="cwrap"><input class="cinput" value="118%"/><span class="csuffix">ao ano</span></div></div>
+              <div class="crow"><span class="clbl">Valor a aplicar</span><div class="cwrap"><input class="cinput" value="R$ 200.000,00"/></div></div>
+              <div class="crow">
+                <div class="clbl-wrap"><span class="clbl">Prazo</span><div class="period-switch"><button class="period-btn on">M</button><button class="period-btn">A</button></div></div>
+                <div class="cwrap"><input class="cinput" value="24"/><span class="csuffix">meses</span></div>
+              </div>
+              <div class="crow total"><span class="clbl">Valor no vencimento</span><span class="cout">R$ 246.910,00</span></div>
+              <div class="crow"><span class="clbl">Limite FGC (R$ 250 mil)</span><span class="cout pos">OK</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="cat">
+          <div class="cat-h"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>Conversão de taxas<span class="line"></span></div>
+          <div class="calc-grid">
+            <div class="ccard">
+              <h4>Cálculo da Taxa Real</h4>
+              <div class="crow"><span class="clbl">Taxa ao ano</span><div class="cwrap"><input class="cinput" value="0,00"/></div></div>
+              <div class="crow"><span class="clbl">Inflação (12 meses)</span><div class="cwrap"><input class="cinput" value="0,00"/></div></div>
+              <div class="crow total"><span class="clbl">Taxa real ao ano</span><span class="cout">0,00%</span></div>
+              <div class="crow"><span class="clbl">Taxa real ao mês</span><span class="cout">0,00%</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="cat">
+          <div class="cat-h"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 10v10"/></svg>Calculadora de Renda Fixa<span class="line"></span></div>
+          <div class="calc-grid rf">
+            <div class="ccard">
+              <h4>Dados do título</h4>
+              <div class="crow"><span class="clbl">Emissor</span><div class="cwrap"><input class="cinput" style="text-align:left" value="XP"/></div></div>
+              <div class="crow"><span class="clbl">Tipo do ativo</span><div class="cwrap"><select class="cselect"><option>CDB</option><option>LCI</option><option>LCA</option></select></div></div>
+              <div class="crow"><span class="clbl">Data da aplicação</span><div class="cwrap"><input class="cinput" type="date" value="2026-07-17"/></div></div>
+              <div class="crow"><span class="clbl">Data de vencimento</span><div class="cwrap"><input class="cinput" type="date" value="2031-07-15"/></div></div>
+              <div class="crow"><span class="clbl">Taxa contratada (a.a.)</span><div class="cwrap"><input class="cinput" value="14,80"/><span class="csuffix">%</span></div></div>
+              <div class="crow"><span class="clbl">Valor aplicado</span><div class="cwrap"><input class="cinput" value="R$ 100.000,00"/></div></div>
+            </div>
+            <div class="ccard rf-res">
+              <h4>Resultado</h4>
+              <div class="rf-hero">
+                <span class="rf-hero-lbl">Valor líquido no vencimento</span>
+                <span class="rf-hero-val">R$ 183.281,40</span>
+                <span class="rf-hero-sub">Rentabilidade líquida de <b>13,02% a.a.</b> · 1,03% a.m.</span>
+              </div>
+              <div class="crow"><span class="clbl">Valor bruto</span><span class="cout">R$ 197.978,12</span></div>
+              <div class="crow"><span class="clbl">IR a ser pago (15%)</span><span class="cout neg">− R$ 14.696,72</span></div>
+              <div class="crow"><span class="clbl">Rentabilidade bruta (a.a.)</span><span class="cout">14,80%</span></div>
+              <button class="detail-toggle" data-detail="rf1"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>Ver detalhes do cálculo</button>
+              <div class="rf-detail" id="rf1" hidden>
+                <div class="crow"><span class="clbl">Nº de dias corridos</span><span class="cout">1.824</span></div>
+                <div class="crow"><span class="clbl">Nº de dias úteis</span><span class="cout">1.247</span></div>
+                <div class="crow"><span class="clbl">Alíquota de IR</span><span class="cout">15,00%</span></div>
+                <div class="crow"><span class="clbl">Rentabilidade bruta ao mês</span><span class="cout">1,16%</span></div>
+                <div class="crow"><span class="clbl">Rentabilidade líquida ao mês</span><span class="cout">1,03%</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== Comparadora de Renda Fixa ===================== -->
+      <section class="cmpx-secao tab-secao" data-tab="cmp" hidden>
+        <div class="calc-toolbar"><button class="btn-limpar" type="button"><svg viewBox="0 0 24 24"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>Limpar</button></div>
+        <div class="cmpx">
+          <div class="cmpx-inputs">
+            <div class="ccard">
+              <h4>Emissor A</h4>
+              <div class="crow"><span class="clbl">Emissor</span><div class="cwrap"><input class="cinput" style="text-align:left" value="XP"/></div></div>
+              <div class="crow"><span class="clbl">Tipo do ativo</span><div class="cwrap"><select class="cselect"><option>CDB</option><option>LCI</option><option>LCA</option></select></div></div>
+              <div class="crow"><span class="clbl">Data da aplicação</span><div class="cwrap"><input class="cinput" type="date" value="2026-07-17"/></div></div>
+              <div class="crow"><span class="clbl">Data de vencimento</span><div class="cwrap"><input class="cinput" type="date" value="2031-07-15"/></div></div>
+              <div class="crow"><span class="clbl">Taxa contratada (a.a.)</span><div class="cwrap"><input class="cinput" value="14,80"/><span class="csuffix">%</span></div></div>
+              <div class="crow"><span class="clbl">Valor aplicado</span><div class="cwrap"><input class="cinput" value="R$ 100.000,00"/></div></div>
+            </div>
+            <div class="ccard">
+              <h4>Emissor B</h4>
+              <div class="crow"><span class="clbl">Emissor</span><div class="cwrap"><input class="cinput" style="text-align:left" value="Agrolend"/></div></div>
+              <div class="crow"><span class="clbl">Tipo do ativo</span><div class="cwrap"><select class="cselect"><option>CDB</option><option>LCI</option><option>LCA</option></select></div></div>
+              <div class="crow"><span class="clbl">Data da aplicação</span><div class="cwrap"><input class="cinput" type="date" value="2026-07-17"/></div></div>
+              <div class="crow"><span class="clbl">Data de vencimento</span><div class="cwrap"><input class="cinput" type="date" value="2027-10-09"/></div></div>
+              <div class="crow"><span class="clbl">Taxa contratada (a.a.)</span><div class="cwrap"><input class="cinput" value="14,00"/><span class="csuffix">%</span></div></div>
+              <div class="crow"><span class="clbl">Valor aplicado</span><div class="cwrap"><input class="cinput" value="R$ 95.094,52"/></div></div>
+            </div>
+          </div>
+          <div class="cmpx-result">
+            <div class="ccard cmp2">
+              <div class="cmp2-verdict">
+                <svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 18.6 5.9 21.7l1.5-6.8L2.2 9.3l6.9-.7z"/></svg>
+                <span class="cmp2-verdict-txt">Melhor título: <b>Emissor A (XP)</b> — rende <b>1,44 p.p. a.a.</b> a mais no líquido.</span>
+              </div>
+              <div class="comp-table-wrap">
+                <table class="cmp2-tbl">
+                  <thead><tr><th>Métrica</th><th class="win">Emissor A (XP)<span class="cmp2-col-tag">Melhor</span></th><th>Emissor B (Agrolend)</th></tr></thead>
+                  <tbody>
+                    <tr><td>Tipo · vencimento</td><td class="win">CDB · 15/07/2031</td><td>CDB · 09/10/2027</td></tr>
+                    <tr><td>Taxa contratada (a.a.)</td><td class="win">14,80%</td><td>14,00%</td></tr>
+                    <tr><td>Valor aplicado</td><td class="win">R$ 100.000,00</td><td>R$ 95.094,52</td></tr>
+                    <tr><td>Alíquota de IR</td><td class="win">15,00%</td><td>17,50%</td></tr>
+                    <tr><td>Valor líquido</td><td class="win">R$ 183.281,40</td><td>R$ 108.720,38</td></tr>
+                    <tr class="hi"><td>Rentabilidade líquida (a.a.)</td><td class="win">13,02%</td><td>11,58%</td></tr>
+                    <tr><td>Rentabilidade líquida (a.m.)</td><td class="win">1,03%</td><td>0,92%</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="prev-diag">Dias úteis consideram o calendário ANBIMA atual (inclui Consciência Negra a partir de 2024).</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== Calculadora Previdenciária ===================== -->
+      <section class="prev-secao tab-secao" data-tab="prev" hidden>
+        <div class="calc-toolbar"><button class="btn-limpar" type="button"><svg viewBox="0 0 24 24"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>Limpar</button></div>
+        <div class="prev">
+          <div class="ccard prev-inputs">
+            <h4>Premissas</h4>
+            <div class="crow"><span class="clbl">Renda bruta (mês)</span><div class="cwrap"><input class="cinput" value="R$ 8.000,00"/></div></div>
+            <div class="crow"><span class="clbl">Gasto com saúde (mês)</span><div class="cwrap"><input class="cinput" value="R$ 200,00"/></div></div>
+            <div class="crow"><span class="clbl">Quantidade de dependentes</span><div class="cwrap"><input class="cinput" value="1"/></div></div>
+            <div class="crow"><span class="clbl">Gasto com educação própria (mês)</span><div class="cwrap"><input class="cinput" value="R$ 300,00"/></div></div>
+            <div class="crow"><span class="clbl">Gasto com educação dos dependentes (mês)</span><div class="cwrap"><input class="cinput" value="R$ 100,00"/></div></div>
+            <div class="crow"><span class="clbl">Contribuição no PGBL (total no ano)</span><div class="cwrap"><input class="cinput" value="R$ 5.000,00"/></div></div>
+            <div class="prev-diag">Limite dedutível de PGBL: R$ 11.840,00. Ainda falta R$ 6.840,00 para atingir o limite.</div>
+          </div>
+          <div class="prev-resultado">
+            <div class="comp-table-wrap">
+            <table class="dtable prev-table">
+              <thead><tr><th>Cálculos</th><th>Simplificada</th><th>Completa</th><th>Completa c/ 12% PGBL <span class="th-tag">Recomendada</span></th></tr></thead>
+              <tbody>
+                <tr><td class="prev-lbl">Renda Anual</td><td class="prev-val">R$ 98.666,67</td><td class="prev-val">R$ 98.666,67</td><td class="prev-val">R$ 98.666,67</td></tr>
+                <tr class="grp"><td colspan="4">Deduções aplicadas</td></tr>
+                <tr><td class="prev-lbl">Dedução INSS</td><td class="prev-val">R$ 0,00</td><td class="prev-val">R$ 11.431,51</td><td class="prev-val">R$ 11.431,51</td></tr>
+                <tr><td class="prev-lbl">Dedução Saúde</td><td class="prev-val">R$ 0,00</td><td class="prev-val">R$ 2.400,00</td><td class="prev-val">R$ 2.400,00</td></tr>
+                <tr><td class="prev-lbl">Dedução Educação própria</td><td class="prev-val">R$ 0,00</td><td class="prev-val">R$ 3.561,50</td><td class="prev-val">R$ 3.561,50</td></tr>
+                <tr><td class="prev-lbl">Dedução Educação dependentes</td><td class="prev-val">R$ 0,00</td><td class="prev-val">R$ 1.200,00</td><td class="prev-val">R$ 1.200,00</td></tr>
+                <tr><td class="prev-lbl">Dedução Dependentes</td><td class="prev-val">R$ 0,00</td><td class="prev-val">R$ 2.275,08</td><td class="prev-val">R$ 2.275,08</td></tr>
+                <tr><td class="prev-lbl">Dedução PGBL</td><td class="prev-val">R$ 0,00</td><td class="prev-val">R$ 5.000,00</td><td class="prev-val">R$ 11.840,00</td></tr>
+                <tr><td class="prev-lbl">Dedução Simplificada</td><td class="prev-val">R$ 16.754,34</td><td class="prev-val">R$ 0,00</td><td class="prev-val">R$ 0,00</td></tr>
+                <tr class="grp"><td colspan="4">Resultado</td></tr>
+                <tr class="prev-total"><td class="prev-lbl">Base Tributável</td><td class="prev-val">R$ 81.912,33</td><td class="prev-val">R$ 72.798,58</td><td class="prev-val">R$ 65.958,58</td></tr>
+                <tr><td class="prev-lbl">IR na Fonte</td><td class="prev-val">R$ 13.084,91</td><td class="prev-val">R$ 13.084,91</td><td class="prev-val">R$ 13.084,91</td></tr>
+                <tr class="prev-total"><td class="prev-lbl">IR Devido</td><td class="prev-val">R$ 11.621,13</td><td class="prev-val">R$ 9.114,85</td><td class="prev-val">R$ 7.233,85</td></tr>
+                <tr class="prev-total"><td class="prev-lbl">Restituição / a pagar</td><td class="prev-val">R$ 1.463,78</td><td class="prev-val">R$ 3.970,06</td><td class="prev-val">R$ 5.851,06</td></tr>
+              </tbody>
+            </table>
+            </div>
+            <div class="prev-diag prev-diag-economia">Economia de R$ 2.506,28 no ano caso seja feita a declaração completa. Com a contribuição de PGBL no limite de 12%, a economia sobe para R$ 4.387,28.</div>
+            <div class="warn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span>Tabela 2026 levantada a partir de fontes públicas (não do texto oficial da lei). Os tetos de educação e de dedução simplificada anual não têm confirmação de terem mudado e foram mantidos iguais a 2022. Valide antes de usar com cliente.</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== Compromissada ===================== -->
+      <section class="comp-secao tab-secao" data-tab="comp" hidden>
+        <div class="calc-toolbar"><button class="btn-limpar" type="button"><svg viewBox="0 0 24 24"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>Limpar</button></div>
+        <div class="comp">
+          <div class="ccard comp-inputs">
+            <h4>Premissas</h4>
+            <div class="crow"><span class="clbl">Financeiro</span><div class="cwrap"><input class="cinput" value="R$ 1.000.000,00"/></div></div>
+            <div class="crow"><span class="clbl">Dias úteis no ano</span><div class="cwrap"><input class="cinput" value="252"/></div></div>
+            <div class="crow"><span class="clbl">SELIC atual</span><div class="cwrap"><input class="cinput" value="14,15"/></div></div>
+            <div class="crow"><span class="clbl">Data início</span><div class="cwrap"><input class="cinput" type="date" value="2026-07-17"/></div></div>
+            <div class="crow"><span class="clbl">Taxa Conta Remunerada (% do CDI)</span><div class="cwrap"><input class="cinput" value="50"/></div></div>
+            <div class="crow"><span class="clbl">Taxa CDB (% do CDI)</span><div class="cwrap"><input class="cinput" value="100"/></div></div>
+            <div class="crow"><span class="clbl">Taxa Compromissada (% do CDI)</span><div class="cwrap"><input class="cinput" value="70"/></div></div>
+            <div class="crow"><span class="clbl">Horizonte (dias úteis)</span><div class="cwrap"><input class="cinput" value="30"/></div></div>
+            <div class="prev-diag">CDI diário: 0,00053400</div>
+          </div>
+          <div class="comp-resultado">
+            <div class="ccard chart-card">
+              <h4>Rendimento por dia útil</h4>
+              <div class="chart-legend">
+                <button class="legend-item" type="button"><span class="legend-swatch" style="background:#0d9488"></span>Conta Remunerada</button>
+                <button class="legend-item" type="button"><span class="legend-swatch" style="background:#2563eb"></span>CDB</button>
+                <button class="legend-item" type="button"><span class="legend-swatch" style="background:#d97706"></span>Compromissada</button>
+              </div>
+              <div class="chart-canvas-wrap">
+                <svg viewBox="0 0 600 226" preserveAspectRatio="none" style="width:100%;height:280px;display:block">
+                  <line x1="48" y1="204" x2="592" y2="204" stroke="var(--line-2)" stroke-width="1"/>
+                  <line x1="48" y1="156" x2="592" y2="156" stroke="var(--line-2)" stroke-width="1"/>
+                  <line x1="48" y1="109" x2="592" y2="109" stroke="var(--line-2)" stroke-width="1"/>
+                  <line x1="48" y1="61" x2="592" y2="61" stroke="var(--line-2)" stroke-width="1"/>
+                  <line x1="48" y1="14" x2="592" y2="14" stroke="var(--line-2)" stroke-width="1"/>
+                  <text x="42" y="207" text-anchor="end" font-size="11" font-weight="400" fill="var(--ink-2)">R$ 0,00</text>
+                  <text x="42" y="159" text-anchor="end" font-size="11" font-weight="400" fill="var(--ink-2)">R$ 100,00</text>
+                  <text x="42" y="112" text-anchor="end" font-size="11" font-weight="400" fill="var(--ink-2)">R$ 200,00</text>
+                  <text x="42" y="64" text-anchor="end" font-size="11" font-weight="400" fill="var(--ink-2)">R$ 300,00</text>
+                  <text x="42" y="18" text-anchor="end" font-size="11" font-weight="400" fill="var(--ink-2)">R$ 400,00</text>
+                  <text x="48" y="220" text-anchor="middle" font-size="11" font-weight="400" fill="var(--ink-2)">1</text>
+                  <text x="140" y="220" text-anchor="middle" font-size="11" font-weight="400" fill="var(--ink-2)">5</text>
+                  <text x="231" y="220" text-anchor="middle" font-size="11" font-weight="400" fill="var(--ink-2)">10</text>
+                  <text x="322" y="220" text-anchor="middle" font-size="11" font-weight="400" fill="var(--ink-2)">15</text>
+                  <text x="413" y="220" text-anchor="middle" font-size="11" font-weight="400" fill="var(--ink-2)">20</text>
+                  <text x="505" y="220" text-anchor="middle" font-size="11" font-weight="400" fill="var(--ink-2)">25</text>
+                  <text x="592" y="220" text-anchor="middle" font-size="11" font-weight="400" fill="var(--ink-2)">30</text>
+                  <line x1="450" y1="14" x2="450" y2="204" stroke="var(--ink-2)" stroke-width="1" stroke-dasharray="4 4"/>
+                  <polyline points="48,201 140,197 231,192 322,183 413,169 450,161 505,148 592,133" fill="none" stroke="#0d9488" stroke-width="2.5"/>
+                  <polyline points="48,201 140,196 231,187 322,166 413,133 450,116 505,89 592,14" fill="none" stroke="#2563eb" stroke-width="2.5"/>
+                  <polyline points="48,198 140,181 231,157 322,133 413,118 450,116 505,113 592,101" fill="none" stroke="#d97706" stroke-width="2.5"/>
+                </svg>
+              </div>
+            </div>
+            <div class="ccard comp-destaque">
+              <h4>Dia em que o CDB fica à frente</h4>
+              <div class="comp-destaque-valor pos">22º dia útil (18/08/2026)</div>
+            </div>
+            <div class="table-card comp-table-wrap">
+              <table class="dtable prev-table">
+                <thead><tr><th>D.U.</th><th>Data</th><th>IOF</th><th>Conta Remunerada</th><th>CDB</th><th>Compromissada</th><th>Equiv. do CDB</th></tr></thead>
+                <tbody>
+                  <tr><td>1</td><td>20/07/2026</td><td class="prev-val">96,00%</td><td class="prev-val">R$ 0,52</td><td class="prev-val">R$ 1,04</td><td class="prev-val">R$ 1,46</td><td class="prev-val">142,86%</td></tr>
+                  <tr><td>2</td><td>21/07/2026</td><td class="prev-val">93,00%</td><td class="prev-val">R$ 1,58</td><td class="prev-val">R$ 3,16</td><td class="prev-val">R$ 4,44</td><td class="prev-val">210,09%</td></tr>
+                  <tr><td>3</td><td>22/07/2026</td><td class="prev-val">90,00%</td><td class="prev-val">R$ 3,03</td><td class="prev-val">R$ 6,06</td><td class="prev-val">R$ 8,50</td><td class="prev-val">277,31%</td></tr>
+                  <tr><td>4</td><td>23/07/2026</td><td class="prev-val">86,00%</td><td class="prev-val">R$ 4,82</td><td class="prev-val">R$ 9,63</td><td class="prev-val">R$ 13,49</td><td class="prev-val">344,54%</td></tr>
+                  <tr><td>5</td><td>24/07/2026</td><td class="prev-val">83,00%</td><td class="prev-val">R$ 6,89</td><td class="prev-val">R$ 13,78</td><td class="prev-val">R$ 19,29</td><td class="prev-val">411,76%</td></tr>
+                  <tr><td>6</td><td>27/07/2026</td><td class="prev-val">80,00%</td><td class="prev-val">R$ 9,93</td><td class="prev-val">R$ 19,86</td><td class="prev-val">R$ 27,70</td><td class="prev-val">343,13%</td></tr>
+                  <tr><td>7</td><td>28/07/2026</td><td class="prev-val">76,00%</td><td class="prev-val">R$ 13,54</td><td class="prev-val">R$ 27,08</td><td class="prev-val">R$ 37,62</td><td class="prev-val">294,11%</td></tr>
+                  <tr><td>8</td><td>29/07/2026</td><td class="prev-val">73,00%</td><td class="prev-val">R$ 17,68</td><td class="prev-val">R$ 35,36</td><td class="prev-val">R$ 49,04</td><td class="prev-val">257,35%</td></tr>
+                  <tr><td>9</td><td>30/07/2026</td><td class="prev-val">70,00%</td><td class="prev-val">R$ 22,35</td><td class="prev-val">R$ 44,70</td><td class="prev-val">R$ 61,94</td><td class="prev-val">228,76%</td></tr>
+                  <tr><td>10</td><td>31/07/2026</td><td class="prev-val">66,00%</td><td class="prev-val">R$ 27,64</td><td class="prev-val">R$ 55,29</td><td class="prev-val">R$ 76,34</td><td class="prev-val">205,88%</td></tr>
+                  <tr><td>11</td><td>03/08/2026</td><td class="prev-val">63,00%</td><td class="prev-val">R$ 33,58</td><td class="prev-val">R$ 67,16</td><td class="prev-val">R$ 89,01</td><td class="prev-val">194,56%</td></tr>
+                  <tr><td>12</td><td>04/08/2026</td><td class="prev-val">60,00%</td><td class="prev-val">R$ 40,11</td><td class="prev-val">R$ 80,22</td><td class="prev-val">R$ 102,41</td><td class="prev-val">183,24%</td></tr>
+                  <tr><td>13</td><td>05/08/2026</td><td class="prev-val">56,00%</td><td class="prev-val">R$ 47,22</td><td class="prev-val">R$ 94,44</td><td class="prev-val">R$ 116,53</td><td class="prev-val">171,91%</td></tr>
+                  <tr><td>14</td><td>06/08/2026</td><td class="prev-val">53,00%</td><td class="prev-val">R$ 54,93</td><td class="prev-val">R$ 109,86</td><td class="prev-val">R$ 131,28</td><td class="prev-val">160,59%</td></tr>
+                  <tr><td>15</td><td>07/08/2026</td><td class="prev-val">50,00%</td><td class="prev-val">R$ 63,24</td><td class="prev-val">R$ 126,48</td><td class="prev-val">R$ 146,71</td><td class="prev-val">149,27%</td></tr>
+                  <tr><td>16</td><td>10/08/2026</td><td class="prev-val">46,00%</td><td class="prev-val">R$ 72,15</td><td class="prev-val">R$ 144,30</td><td class="prev-val">R$ 162,77</td><td class="prev-val">137,94%</td></tr>
+                  <tr><td>17</td><td>11/08/2026</td><td class="prev-val">43,00%</td><td class="prev-val">R$ 81,66</td><td class="prev-val">R$ 163,32</td><td class="prev-val">R$ 179,53</td><td class="prev-val">126,62%</td></tr>
+                  <tr><td>18</td><td>12/08/2026</td><td class="prev-val">40,00%</td><td class="prev-val">R$ 91,75</td><td class="prev-val">R$ 183,50</td><td class="prev-val">R$ 196,78</td><td class="prev-val">115,29%</td></tr>
+                  <tr><td>19</td><td>13/08/2026</td><td class="prev-val">36,00%</td><td class="prev-val">R$ 102,45</td><td class="prev-val">R$ 204,90</td><td class="prev-val">R$ 214,71</td><td class="prev-val">103,97%</td></tr>
+                  <tr><td>20</td><td>14/08/2026</td><td class="prev-val">33,00%</td><td class="prev-val">R$ 113,72</td><td class="prev-val">R$ 227,44</td><td class="prev-val">R$ 233,19</td><td class="prev-val">92,65%</td></tr>
+                  <tr><td>21</td><td>17/08/2026</td><td class="prev-val">30,00%</td><td class="prev-val">R$ 125,62</td><td class="prev-val">R$ 251,24</td><td class="prev-val">R$ 252,31</td><td class="prev-val">81,32%</td></tr>
+                  <tr class="comp-row-cruzamento"><td>22</td><td>18/08/2026</td><td class="prev-val">26,00%</td><td class="prev-val">R$ 138,20</td><td class="prev-val">R$ 276,41</td><td class="prev-val">R$ 271,88</td><td class="prev-val">70,00%</td></tr>
+                  <tr><td>23</td><td>19/08/2026</td><td class="prev-val">23,00%</td><td class="prev-val">R$ 144,83</td><td class="prev-val">R$ 289,66</td><td class="prev-val">R$ 283,86</td><td class="prev-val">70,00%</td></tr>
+                  <tr><td>24</td><td>20/08/2026</td><td class="prev-val">20,00%</td><td class="prev-val">R$ 151,45</td><td class="prev-val">R$ 302,90</td><td class="prev-val">R$ 295,86</td><td class="prev-val">70,00%</td></tr>
+                  <tr><td>25</td><td>21/08/2026</td><td class="prev-val">16,00%</td><td class="prev-val">R$ 158,11</td><td class="prev-val">R$ 316,22</td><td class="prev-val">R$ 307,69</td><td class="prev-val">70,00%</td></tr>
+                  <tr><td>26</td><td>24/08/2026</td><td class="prev-val">13,00%</td><td class="prev-val">R$ 164,75</td><td class="prev-val">R$ 329,50</td><td class="prev-val">R$ 319,63</td><td class="prev-val">70,00%</td></tr>
+                  <tr><td>27</td><td>25/08/2026</td><td class="prev-val">10,00%</td><td class="prev-val">R$ 171,44</td><td class="prev-val">R$ 342,88</td><td class="prev-val">R$ 331,62</td><td class="prev-val">70,00%</td></tr>
+                  <tr><td>28</td><td>26/08/2026</td><td class="prev-val">6,00%</td><td class="prev-val">R$ 178,12</td><td class="prev-val">R$ 356,24</td><td class="prev-val">R$ 343,60</td><td class="prev-val">70,00%</td></tr>
+                  <tr><td>29</td><td>27/08/2026</td><td class="prev-val">3,00%</td><td class="prev-val">R$ 184,84</td><td class="prev-val">R$ 369,68</td><td class="prev-val">R$ 355,51</td><td class="prev-val">70,00%</td></tr>
+                  <tr><td>30</td><td>28/08/2026</td><td class="prev-val">0,00%</td><td class="prev-val">R$ 191,54</td><td class="prev-val">R$ 383,15</td><td class="prev-val">R$ 367,29</td><td class="prev-val">70,00%</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== Planejamento de Aposentadoria ===================== -->
+      <section class="comp-secao tab-secao" data-tab="apos" hidden>
+        <div class="calc-toolbar"><button class="btn-limpar" type="button"><svg viewBox="0 0 24 24"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>Limpar</button></div>
+        <div class="comp">
+          <div class="ccard comp-inputs">
+            <h4>Premissas</h4>
+            <div class="crow"><span class="clbl">Data do cálculo</span><div class="cwrap"><input class="cinput" type="date" value="2026-07-17"/></div></div>
+            <div class="crow"><span class="clbl">Idade Atual</span><div class="cwrap"><input class="cinput" value="26"/><span class="csuffix">anos</span></div></div>
+            <div class="crow"><span class="clbl">Idade de Aposentadoria</span><div class="cwrap"><input class="cinput" value="65"/><span class="csuffix">anos</span></div></div>
+            <div class="crow"><span class="clbl">Expectativa de Vida</span><div class="cwrap"><input class="cinput" value="98"/><span class="csuffix">anos</span></div></div>
+            <div class="crow"><span class="clbl">Aplicações Financeiras</span><div class="cwrap"><input class="cinput" value="R$ 5.000,00"/></div></div>
+            <div class="crow"><span class="clbl">Aplicação Mensal (atual)</span><div class="cwrap"><input class="cinput" value="R$ 300,00"/></div></div>
+            <div class="crow"><span class="clbl">Renda Desejada na Aposentadoria</span><div class="cwrap"><input class="cinput" value="R$ 9.000,00"/></div></div>
+            <div class="crow"><span class="clbl">Renda Projetada do INSS</span><div class="cwrap"><input class="cinput" value="R$ 1.500,00"/></div></div>
+            <div class="crow"><span class="clbl">Outras fontes de renda</span><div class="cwrap"><input class="cinput" value="R$ 0,00"/></div></div>
+            <div class="crow"><span class="clbl">Taxa Real Líquida (a.a.)</span><div class="cwrap"><input class="cinput" value="9,00"/></div></div>
+            <div class="crow"><span class="clbl">Patrimônio de Sucessão desejado</span><div class="cwrap"><input class="cinput" value="R$ 0,00"/></div></div>
+            <div class="prev-diag">Horizonte de acumulação: 39 anos · Horizonte de aposentadoria: 33 anos · Taxa real líquida mensal: 0,72% · Renda mensal necessária do patrimônio: R$ 7.500,00</div>
+          </div>
+          <div class="comp-resultado">
+            <div class="cmp-grid">
+              <div class="ccard">
+                <h4>Consumo de Patrimônio (com Sucessão)</h4>
+                <div class="crow total"><span class="clbl">Patrimônio necessário na aposentadoria</span><span class="cout">R$ 980.044,48</span></div>
+                <div class="crow"><span class="clbl">Parcela mensal necessária</span><span class="cout">R$ 216,60</span></div>
+                <div class="crow"><span class="clbl">Sua aplicação mensal atual</span><span class="cout">R$ 300,00</span></div>
+                <div class="crow total"><span class="clbl">Diferença</span><span class="cout pos">Sobram R$ 83,40/mês</span></div>
+                <div class="chart-canvas-wrap apos-chart">
+                  <svg viewBox="0 0 600 200" preserveAspectRatio="none" style="width:100%;height:200px;display:block">
+                    <line x1="54" y1="176" x2="588" y2="176" stroke="var(--line-2)" stroke-width="1"/>
+                    <line x1="54" y1="133" x2="588" y2="133" stroke="var(--line-2)" stroke-width="1"/>
+                    <line x1="54" y1="90" x2="588" y2="90" stroke="var(--line-2)" stroke-width="1"/>
+                    <line x1="54" y1="47" x2="588" y2="47" stroke="var(--line-2)" stroke-width="1"/>
+                    <line x1="54" y1="10" x2="588" y2="10" stroke="var(--line-2)" stroke-width="1"/>
+                    <text x="48" y="179" text-anchor="end" font-size="10.5" fill="var(--ink-2)">R$ 0,00</text>
+                    <text x="48" y="93" text-anchor="end" font-size="10.5" fill="var(--ink-2)">R$ 653 mil</text>
+                    <text x="48" y="13" text-anchor="end" font-size="10.5" fill="var(--ink-2)">R$ 980 mil</text>
+                    <line x1="330" y1="10" x2="330" y2="176" stroke="var(--ink-2)" stroke-width="1" stroke-dasharray="4 4"/>
+                    <polyline points="54,176 140,150 220,110 330,40 410,80 500,140 588,178" fill="none" stroke="#2563eb" stroke-width="2.5"/>
+                    <text x="54" y="188" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">hoje</text>
+                    <text x="330" y="188" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">aposentadoria</text>
+                    <text x="588" y="188" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">72 anos</text>
+                  </svg>
+                </div>
+              </div>
+              <div class="ccard">
+                <h4>Viver de Renda (Preservando Patrimônio)</h4>
+                <div class="crow total"><span class="clbl">Patrimônio necessário na aposentadoria</span><span class="cout">R$ 1.040.608,24</span></div>
+                <div class="crow"><span class="clbl">Parcela mensal necessária</span><span class="cout">R$ 232,30</span></div>
+                <div class="crow"><span class="clbl">Sua aplicação mensal atual</span><span class="cout">R$ 300,00</span></div>
+                <div class="crow total"><span class="clbl">Diferença</span><span class="cout pos">Sobram R$ 67,70/mês</span></div>
+                <div class="chart-canvas-wrap apos-chart">
+                  <svg viewBox="0 0 600 200" preserveAspectRatio="none" style="width:100%;height:200px;display:block">
+                    <line x1="54" y1="176" x2="588" y2="176" stroke="var(--line-2)" stroke-width="1"/>
+                    <line x1="54" y1="133" x2="588" y2="133" stroke="var(--line-2)" stroke-width="1"/>
+                    <line x1="54" y1="90" x2="588" y2="90" stroke="var(--line-2)" stroke-width="1"/>
+                    <line x1="54" y1="47" x2="588" y2="47" stroke="var(--line-2)" stroke-width="1"/>
+                    <line x1="54" y1="10" x2="588" y2="10" stroke="var(--line-2)" stroke-width="1"/>
+                    <text x="48" y="179" text-anchor="end" font-size="10.5" fill="var(--ink-2)">R$ 0,00</text>
+                    <text x="48" y="93" text-anchor="end" font-size="10.5" fill="var(--ink-2)">R$ 694 mil</text>
+                    <text x="48" y="13" text-anchor="end" font-size="10.5" fill="var(--ink-2)">R$ 1.041 mil</text>
+                    <line x1="330" y1="10" x2="330" y2="176" stroke="var(--ink-2)" stroke-width="1" stroke-dasharray="4 4"/>
+                    <polyline points="54,176 140,150 220,110 330,48 410,46 500,44 588,42" fill="none" stroke="#0d9488" stroke-width="2.5"/>
+                    <text x="54" y="188" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">hoje</text>
+                    <text x="330" y="188" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">aposentadoria</text>
+                    <text x="588" y="188" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">72 anos</text>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <div class="statusbar"><span class="dot"></span><span>Pronto · 103 cliente(s) carregado(s).</span></div>
+  </div>
+
+  <!-- ===================== Configurações (popup) ===================== -->
+  <div class="modal-fundo" id="cfg-fundo" hidden>
+    <div class="cfg-caixa">
+      <button class="cfg-close" id="cfg-fechar"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+      <div class="cfg-nav">
+        <button class="cfg-nav-item" data-cfg="email"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg><span>E-mail</span></button>
+        <button class="cfg-nav-item on" data-cfg="temas"><svg viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h5M13 17h7"/><circle cx="15" cy="7" r="2"/><circle cx="11" cy="17" r="2"/></svg><span>Temas</span></button>
+        <button class="cfg-nav-item" data-cfg="prev"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 5-3.5 8-7 9-3.5-1-7-4-7-9V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg><span>Tabela previdenciária</span></button>
+        <button class="cfg-nav-item" data-cfg="visao"><svg viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg><span>Visão</span></button>
+        <button class="cfg-nav-item" data-cfg="apresentacao"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg><span>Modo apresentação</span></button>
+        <button class="cfg-nav-item" data-cfg="recorte"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M21 15l-5-5-8 8"/></svg><span>Recorte da imagem</span></button>
+        <button class="cfg-nav-item" data-cfg="sobre"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M12 11v5"/></svg><span>Sobre</span></button>
+        <button class="cfg-nav-item" data-cfg="falhas"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span>Arquivos com falha</span></button>
+      </div>
+      <div class="cfg-body">
+
+        <div class="cfg-secao" data-cfg="email" hidden>
+          <h3 class="cfg-h">E-mail</h3>
+          <p class="cfg-sub">Escolha como o gerador de e-mails de ordem se comporta.</p>
+          <div class="cfg-grp">
+            <div class="cfg-grp-lbl">Modo de geração</div>
+            <div class="theme-opts">
+              <div class="theme-opt on"><div class="theme-opt-lbl">Padronizado (recomendado)</div><div class="cfg-placeholder">Cada e-mail tem só um produto e tipo de movimentação, seguindo os modelos de compliance.</div></div>
+              <div class="theme-opt"><div class="theme-opt-lbl">Livre</div><div class="cfg-placeholder">Comportamento antigo: cada operação escolhe seu próprio produto, permitindo misturar vários num só e-mail.</div></div>
+            </div>
+          </div>
+          <div class="cfg-confirm-row"><button class="btn pri" disabled>Confirmar</button></div>
+        </div>
+
+        <div class="cfg-secao" data-cfg="temas">
+          <h3 class="cfg-h">Temas</h3>
+          <p class="cfg-sub">Escolha o tema, a cor de acento e a fonte do aplicativo.</p>
+          <div class="cfg-grp">
+            <div class="cfg-grp-lbl">Tema</div>
+            <div class="theme-opts">
+              <div class="theme-opt on" data-tema="claro"><div class="theme-opt-swatch claro"></div><div class="theme-opt-lbl">Claro</div></div>
+              <div class="theme-opt" data-tema="escuro"><div class="theme-opt-swatch escuro"></div><div class="theme-opt-lbl">Escuro</div></div>
+            </div>
+          </div>
+          <div class="cfg-grp">
+            <div class="cfg-grp-lbl">Cor de acento</div>
+            <div class="acc-opts">
+              <div class="acc-opt on" data-acc="esmeralda"><div class="acc-opt-swatch" style="background:#059669"></div><div class="acc-opt-lbl">Esmeralda</div></div>
+              <div class="acc-opt" data-acc="teal"><div class="acc-opt-swatch" style="background:#0d9488"></div><div class="acc-opt-lbl">Teal</div></div>
+              <div class="acc-opt" data-acc="aqua"><div class="acc-opt-swatch" style="background:#06b6d4"></div><div class="acc-opt-lbl">Aqua</div></div>
+              <div class="acc-opt" data-acc="petroleo"><div class="acc-opt-swatch" style="background:#0f3d3e"></div><div class="acc-opt-lbl">Verde petróleo</div></div>
+            </div>
+          </div>
+          <div class="cfg-grp">
+            <div class="cfg-grp-lbl">Fonte da interface</div>
+            <div class="font-picker">
+              <div class="font-list" id="font-opts">
+                <button class="font-row on" data-font="'Plus Jakarta Sans', system-ui, sans-serif" style="font-family:'Plus Jakarta Sans'">Plus Jakarta Sans<span class="font-row-tag">Atual</span></button>
+                <button class="font-row" data-font="'Inter', sans-serif" style="font-family:'Inter'">Inter</button>
+                <button class="font-row" data-font="'Roboto', sans-serif" style="font-family:'Roboto'">Roboto</button>
+                <button class="font-row" data-font="'Open Sans', sans-serif" style="font-family:'Open Sans'">Open Sans</button>
+                <button class="font-row" data-font="'Lato', sans-serif" style="font-family:'Lato'">Lato</button>
+                <button class="font-row" data-font="'Montserrat', sans-serif" style="font-family:'Montserrat'">Montserrat</button>
+                <button class="font-row" data-font="'Poppins', sans-serif" style="font-family:'Poppins'">Poppins</button>
+                <button class="font-row" data-font="'Nunito', sans-serif" style="font-family:'Nunito'">Nunito</button>
+                <button class="font-row" data-font="'Raleway', sans-serif" style="font-family:'Raleway'">Raleway</button>
+                <button class="font-row" data-font="'Work Sans', sans-serif" style="font-family:'Work Sans'">Work Sans</button>
+                <button class="font-row" data-font="'Source Sans 3', sans-serif" style="font-family:'Source Sans 3'">Source Sans 3</button>
+                <button class="font-row" data-font="'Manrope', sans-serif" style="font-family:'Manrope'">Manrope</button>
+                <button class="font-row" data-font="'DM Sans', sans-serif" style="font-family:'DM Sans'">DM Sans</button>
+                <button class="font-row" data-font="'Rubik', sans-serif" style="font-family:'Rubik'">Rubik</button>
+                <button class="font-row" data-font="'Mulish', sans-serif" style="font-family:'Mulish'">Mulish</button>
+                <button class="font-row" data-font="'Figtree', sans-serif" style="font-family:'Figtree'">Figtree</button>
+                <button class="font-row" data-font="'Outfit', sans-serif" style="font-family:'Outfit'">Outfit</button>
+                <button class="font-row" data-font="'Sora', sans-serif" style="font-family:'Sora'">Sora</button>
+                <button class="font-row" data-font="'Space Grotesk', sans-serif" style="font-family:'Space Grotesk'">Space Grotesk</button>
+                <button class="font-row" data-font="'Jost', sans-serif" style="font-family:'Jost'">Jost</button>
+                <button class="font-row" data-font="'Karla', sans-serif" style="font-family:'Karla'">Karla</button>
+              </div>
+              <div class="font-preview">
+                <div class="font-preview-eyebrow">Pré-visualização</div>
+                <div class="font-preview-title">Rentabilidade</div>
+                <div class="font-preview-sub">Em junho sua carteira teve uma rentabilidade de <b>R$ 305,91</b>, equivalente a 2,14% no mês (<b>118%</b> do CDI).</div>
+                <div class="font-preview-num">R$ 2.480,10 <span>acumulado no ano</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="cfg-grp">
+            <div class="cfg-grp-lbl beta-head">Personalização avançada<span class="beta-badge">Beta</span></div>
+            <div class="beta-toggle-row">
+              <div class="beta-toggle-txt"><b>Escolher a cor de cada elemento</b><br/>Ajuste manualmente cada parte da interface. Sobrepõe o tema e a cor de acento até você redefinir.</div>
+              <button class="beta-switch" id="beta-switch" type="button" aria-label="Ativar modo Beta"></button>
+            </div>
+            <div class="beta-panel" id="beta-panel" hidden>
+              <div class="beta-color"><input type="color" value="#0b3f2f" data-var="--sidebar"/><span class="beta-color-lbl">Barra lateral</span></div>
+              <div class="beta-color"><input type="color" value="#059669" data-var="--primary"/><span class="beta-color-lbl">Acento</span></div>
+              <div class="beta-color"><input type="color" value="#eef3f1" data-var="--bg"/><span class="beta-color-lbl">Fundo</span></div>
+              <div class="beta-color"><input type="color" value="#ffffff" data-var="--surface"/><span class="beta-color-lbl">Cards / superfície</span></div>
+              <div class="beta-color"><input type="color" value="#12302b" data-var="--ink"/><span class="beta-color-lbl">Texto</span></div>
+              <div class="beta-color"><input type="color" value="#5b716b" data-var="--ink-2"/><span class="beta-color-lbl">Texto secundário</span></div>
+              <div class="beta-color"><input type="color" value="#047857" data-var="--pos"/><span class="beta-color-lbl">Positivo</span></div>
+              <div class="beta-color"><input type="color" value="#dbe7e2" data-var="--line"/><span class="beta-color-lbl">Bordas</span></div>
+              <div class="beta-actions"><button class="btn-limpar" id="beta-reset" type="button"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>Redefinir cores</button></div>
+            </div>
+          </div>
+
+          <div class="cfg-confirm-row"><button class="btn pri" disabled>Confirmar</button></div>
+        </div>
+
+        <div class="cfg-secao" data-cfg="prev" hidden>
+          <h3 class="cfg-h">Tabela previdenciária</h3>
+          <p class="cfg-sub">Escolha as tabelas de IRPF/INSS usadas na Calculadora Previdenciária.</p>
+          <div class="cfg-grp">
+            <div class="cfg-grp-lbl">Ano de referência</div>
+            <div class="theme-opts">
+              <div class="theme-opt on"><div class="theme-opt-lbl">2026</div><div class="cfg-placeholder">Faixas de IRPF/INSS vigentes e o redutor de IR criado pela Lei 15.270/2025.</div></div>
+              <div class="theme-opt"><div class="theme-opt-lbl">2022</div><div class="cfg-placeholder">Valores originais da planilha de referência (sem o redutor de 2025).</div></div>
+            </div>
+          </div>
+          <div class="cfg-confirm-row"><button class="btn pri" disabled>Confirmar</button></div>
+        </div>
+
+        <div class="cfg-secao" data-cfg="visao" hidden>
+          <h3 class="cfg-h">Visão</h3>
+          <p class="cfg-sub">Escolha o que aparece na aba Compromissada.</p>
+          <div class="cfg-grp">
+            <div class="cfg-grp-lbl">Perfil de visualização</div>
+            <div class="theme-opts">
+              <div class="theme-opt on"><div class="theme-opt-lbl">Cliente</div><div class="cfg-placeholder">Esconde o SPREAD da plataforma e a comissão do escritório — seguro para apresentar na frente do cliente.</div></div>
+              <div class="theme-opt"><div class="theme-opt-lbl">Assessor</div><div class="cfg-placeholder">Mostra o SPREAD da plataforma e a comissão do escritório na aba Compromissada.</div></div>
+            </div>
+          </div>
+          <div class="cfg-confirm-row"><button class="btn pri" disabled>Confirmar</button></div>
+        </div>
+
+        <div class="cfg-secao" data-cfg="apresentacao" hidden>
+          <h3 class="cfg-h">Modo apresentação</h3>
+          <p class="cfg-sub">Simplifica a sidebar pra compartilhar a tela com o cliente.</p>
+          <div class="cfg-grp">
+            <div class="cfg-grp-lbl">Modo apresentação</div>
+            <div class="theme-opts">
+              <div class="theme-opt on"><div class="theme-opt-lbl">Desligado</div><div class="cfg-placeholder">Tudo normal — todas as abas aparecem na sidebar.</div></div>
+              <div class="theme-opt"><div class="theme-opt-lbl">Ligado</div><div class="cfg-placeholder">Esconde "Rentabilidade", "E-mails de Ordem", "Tabela de Deságio" e "Base de clientes" da sidebar, some com as notificações de status/falha, e muda a aba Compromissada pra Visão Cliente — seguro pra compartilhar a tela com o cliente.</div></div>
+            </div>
+          </div>
+          <div class="cfg-confirm-row"><button class="btn pri" disabled>Confirmar</button></div>
+        </div>
+
+        <div class="cfg-secao" data-cfg="recorte" hidden>
+          <h3 class="cfg-h">Recorte da imagem</h3>
+          <p class="cfg-sub">Ajuste a área da página copiada pelo botão "Copiar imagem" na aba Rentabilidade.</p>
+          <div class="recorte-preview-wrap">
+            <div class="recorte-imgwrap" style="background:var(--inset);aspect-ratio:210/297">
+              <div class="recorte-caixa" style="left:4.5%;top:17.5%;width:60%;height:37%">
+                <div class="recorte-handle recorte-handle-nw"></div>
+                <div class="recorte-handle recorte-handle-ne"></div>
+                <div class="recorte-handle recorte-handle-se"></div>
+                <div class="recorte-handle recorte-handle-sw"></div>
+              </div>
+            </div>
+          </div>
+          <div class="recorte-campos">
+            <div class="crow"><span class="clbl">Esquerda</span><div class="cwrap"><input class="cinput" value="4,50%"/></div></div>
+            <div class="crow"><span class="clbl">Topo</span><div class="cwrap"><input class="cinput" value="17,50%"/></div></div>
+            <div class="crow"><span class="clbl">Direita</span><div class="cwrap"><input class="cinput" value="64,50%"/></div></div>
+            <div class="crow"><span class="clbl">Baixo</span><div class="cwrap"><input class="cinput" value="54,50%"/></div></div>
+          </div>
+          <div class="cfg-confirm-row"><button class="btn ghost">Restaurar padrão</button><button class="btn pri" disabled>Confirmar</button></div>
+        </div>
+
+        <div class="cfg-secao" data-cfg="sobre" hidden>
+          <h3 class="cfg-h">Sobre esta ferramenta</h3>
+          <p class="cfg-placeholder">Este aplicativo é um projeto pessoal, desenvolvido por Gustavo em seu tempo livre, como ferramenta de uso próprio — não se destina a uso comercial.</p>
+          <p class="cfg-placeholder">Dúvidas ou sugestões são bem-vindas a qualquer momento. Em caso de bug, posso ajudar a resolver ou corrigi-lo no meu tempo livre, desde que não atrapalhe minha função como assessor comercial. Se sentir falta de alguma ferramenta que ajudaria no fluxo de trabalho do time, fique à vontade para sugerir.</p>
+          <p class="cfg-placeholder">Importante: este é um projeto pessoal, não uma ferramenta implementada pelo time de tecnologia nem divulgada oficialmente pela XP.</p>
+        </div>
+
+        <div class="cfg-secao" data-cfg="falhas" hidden>
+          <h3 class="cfg-h">Arquivos com falha</h3>
+          <p class="cfg-sub">PDFs que não puderam ser processados na última leitura da pasta de Rentabilidade.</p>
+          <div class="falha-lista">
+            <div class="falha-item"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><div><div class="falha-arquivo">relatorio_10456.pdf</div><div class="falha-erro">não foi possível extrair a rentabilidade do mês: layout do PDF não reconhecido</div></div></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// Troca de aba na sidebar
+var TITULOS = {
+  rent: ["Rentabilidade", "Selecione um cliente para revisar e copiar a mensagem"],
+  mail: ["E-mails de Ordem", "Monte as operações e gere o e-mail do cliente"],
+  des: ["Tabela de Deságio", "Compare valor atual e valor de saída dos títulos"],
+  calc: ["Calculadora Financeira", "Projeções de valores e conversão de taxas"],
+  cmp: ["Comparadora de Renda Fixa", "Compare dois ativos lado a lado e veja o melhor líquido"],
+  prev: ["Calculadora Previdenciária", "Compare declaração Simplificada, Completa e Completa com 12% em PGBL"],
+  comp: ["Compromissada", "Compare Conta Remunerada, CDB e Compromissada dia a dia"],
+  apos: ["Planejamento de Aposentadoria", "Calcule quanto contribuir por mês para se aposentar com a renda desejada"],
+};
+document.querySelectorAll(".navitem[data-tab]").forEach(function (botao) {
+  botao.addEventListener("click", function () {
+    document.querySelectorAll(".navitem[data-tab]").forEach(function (b) { b.classList.remove("on"); });
+    botao.classList.add("on");
+    var id = botao.dataset.tab;
+    document.querySelectorAll(".tab-secao").forEach(function (s) { s.hidden = s.dataset.tab !== id; });
+    document.getElementById("hdr-titulo").textContent = TITULOS[id][0];
+    document.getElementById("hdr-sub").textContent = TITULOS[id][1];
+    document.getElementById("hdr-r").style.display = id === "rent" ? "flex" : "none";
+  });
+});
+
+// Prévia / Modelo
+document.querySelectorAll(".rpanel-h .seg-b").forEach(function (b) {
+  b.addEventListener("click", function () {
+    document.querySelectorAll(".rpanel-h .seg-b").forEach(function (x) { x.classList.remove("on"); });
+    b.classList.add("on");
+  });
+});
+
+// Popup de Configurações
+var cfgFundo = document.getElementById("cfg-fundo");
+document.getElementById("btn-config").addEventListener("click", function () { cfgFundo.hidden = false; });
+document.getElementById("cfg-fechar").addEventListener("click", function () { cfgFundo.hidden = true; });
+cfgFundo.addEventListener("click", function (e) { if (e.target === cfgFundo) cfgFundo.hidden = true; });
+document.querySelectorAll(".cfg-nav-item").forEach(function (botao) {
+  botao.addEventListener("click", function () {
+    document.querySelectorAll(".cfg-nav-item").forEach(function (b) { b.classList.remove("on"); });
+    botao.classList.add("on");
+    var id = botao.dataset.cfg;
+    document.querySelectorAll(".cfg-secao").forEach(function (s) { s.hidden = s.dataset.cfg !== id; });
+  });
+});
+
+// Preview instantâneo de tema/acento (no app real isso só aplica ao
+// clicar "Confirmar" — aqui é imediato só pra facilitar editar o mockup)
+var appEl = document.getElementById("app");
+document.querySelectorAll(".theme-opt[data-tema]").forEach(function (opt) {
+  opt.addEventListener("click", function () {
+    document.querySelectorAll(".theme-opt[data-tema]").forEach(function (o) { o.classList.remove("on"); });
+    opt.classList.add("on");
+    appEl.classList.toggle("dark", opt.dataset.tema === "escuro");
+  });
+});
+document.querySelectorAll(".acc-opt[data-acc]").forEach(function (opt) {
+  opt.addEventListener("click", function () {
+    document.querySelectorAll(".acc-opt[data-acc]").forEach(function (o) { o.classList.remove("on"); });
+    opt.classList.add("on");
+    appEl.classList.remove("acc-esmeralda", "acc-teal", "acc-aqua", "acc-petroleo");
+    appEl.classList.add("acc-" + opt.dataset.acc);
+  });
+});
+
+// Demais opções tipo "theme-opt"/"acc-opt" fora de Temas: só alternam
+// visualmente e habilitam o botão Confirmar (sem lógica real).
+document.querySelectorAll(".cfg-secao[data-cfg='email'] .theme-opt, .cfg-secao[data-cfg='prev'] .theme-opt, .cfg-secao[data-cfg='visao'] .theme-opt, .cfg-secao[data-cfg='apresentacao'] .theme-opt").forEach(function (opt) {
+  opt.addEventListener("click", function () {
+    var grupo = opt.closest(".theme-opts");
+    grupo.querySelectorAll(".theme-opt").forEach(function (o) { o.classList.remove("on"); });
+    opt.classList.add("on");
+    var confirmBtn = opt.closest(".cfg-secao").querySelector(".cfg-confirm-row .btn");
+    if (confirmBtn) confirmBtn.disabled = false;
+  });
+});
+
+// v2: menu de "mais ações" no cabeçalho
+(function () {
+  var mais = document.getElementById("hdr-mais");
+  var menu = document.getElementById("hdr-menu");
+  if (mais && menu) {
+    mais.addEventListener("click", function (e) { e.stopPropagation(); menu.hidden = !menu.hidden; });
+    document.addEventListener("click", function () { menu.hidden = true; });
+    menu.addEventListener("click", function (e) { e.stopPropagation(); });
+  }
+})();
+
+// v2: expandir/ocultar detalhes do cálculo de Renda Fixa
+document.querySelectorAll(".detail-toggle").forEach(function (b) {
+  b.addEventListener("click", function () {
+    var alvo = document.getElementById(b.dataset.detail);
+    if (!alvo) return;
+    var aberto = !alvo.hidden;
+    alvo.hidden = aberto;
+    b.classList.toggle("open", !aberto);
+    b.childNodes[b.childNodes.length - 1].textContent = aberto ? "Ver detalhes do cálculo" : "Ocultar detalhes";
+  });
+});
+
+// v2: troca de fonte ao vivo (hot-swap)
+document.querySelectorAll(".font-row").forEach(function (opt) {
+  opt.addEventListener("click", function () {
+    document.querySelectorAll(".font-row").forEach(function (o) { o.classList.remove("on"); });
+    opt.classList.add("on");
+    appEl.style.setProperty("--font-ui", opt.dataset.font);
+    var confirmBtn = opt.closest(".cfg-secao").querySelector(".cfg-confirm-row .btn");
+    if (confirmBtn) confirmBtn.disabled = false;
+  });
+});
+
+// v3: Limpar cálculos da tela atual
+document.querySelectorAll(".btn-limpar").forEach(function (b) {
+  if (b.id === "beta-reset") return;
+  b.addEventListener("click", function () {
+    var sec = b.closest(".tab-secao");
+    if (!sec) return;
+    sec.querySelectorAll("input.cinput").forEach(function (i) {
+      if (i.type === "date") return;
+      var v = i.value;
+      if (/R\$/.test(v)) i.value = "R$ 0,00";
+      else if (/%/.test(v)) i.value = "0%";
+      else i.value = "0,00";
+    });
+    sec.querySelectorAll(".cselect").forEach(function (s) { s.selectedIndex = 0; });
+    sec.querySelectorAll(".cout").forEach(function (o) { o.textContent = "—"; });
+    sec.querySelectorAll(".rf-hero-val").forEach(function (o) { o.textContent = "—"; });
+  });
+});
+
+// v3: modo Beta — cor de cada elemento individualmente
+(function () {
+  var sw = document.getElementById("beta-switch");
+  var panel = document.getElementById("beta-panel");
+  if (!sw || !panel) return;
+  sw.addEventListener("click", function () {
+    sw.classList.toggle("on");
+    panel.hidden = !sw.classList.contains("on");
+  });
+  panel.querySelectorAll("input[type=color]").forEach(function (inp) {
+    inp.addEventListener("input", function () {
+      appEl.style.setProperty(inp.dataset.var, inp.value);
+      if (inp.dataset.var === "--primary") appEl.style.setProperty("--primary-600", inp.value);
+    });
+  });
+  document.getElementById("beta-reset").addEventListener("click", function () {
+    ["--sidebar", "--primary", "--primary-600", "--bg", "--surface", "--ink", "--ink-2", "--pos", "--line"].forEach(function (v) {
+      appEl.style.removeProperty(v);
+    });
+  });
+})();
+</script>
+</body>
+</html>
