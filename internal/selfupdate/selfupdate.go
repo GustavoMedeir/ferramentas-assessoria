@@ -21,9 +21,9 @@ import (
 )
 
 // Repositorio é o "owner/repo" público no GitHub onde as releases (o .exe
-// mais o .sha256 correspondente) são publicadas — ver Fase 6 do processo de
-// release. TODO: trocar pelo repositório real assim que ele existir.
-const Repositorio = "SEU_USUARIO/ferramentas-assessoria"
+// mais o .sha256 correspondente) são publicadas — ver seção "Atualização
+// automática" em DOCUMENTACAO.md pro passo a passo de release.
+const Repositorio = "GustavoMedeir/ferramentas-assessoria"
 
 // apiBaseURL é var (não const) só pra poder ser trocada por um
 // httptest.Server nos testes — mesmo padrão de internal/icpbrasil/download.go.

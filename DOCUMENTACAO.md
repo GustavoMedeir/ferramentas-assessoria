@@ -133,9 +133,9 @@ suspeito para a heurística).
 ## Atualização automática (internal/selfupdate)
 
 O app checa, em background, se há uma release mais nova publicada num repositório público
-do GitHub (`internal/selfupdate.Repositorio` — **hoje um placeholder, `SEU_USUARIO/...`,
-precisa ser trocado pelo repo real antes da primeira release com esse mecanismo**). Achou
-versão mais nova: aparece um item "Atualização disponível" na barra lateral; ao confirmar,
+do GitHub (`internal/selfupdate.Repositorio`, hoje
+[`GustavoMedeir/ferramentas-assessoria`](https://github.com/GustavoMedeir/ferramentas-assessoria)).
+Achou versão mais nova: aparece um item "Atualização disponível" na barra lateral; ao confirmar,
 o app baixa o novo `.exe`, confere o checksum SHA256, substitui o binário em uso
 (`github.com/minio/selfupdate`, cuida de "arquivo em uso" no Windows e faz rollback
 automático se algo falhar no meio) e reabre sozinho. Tudo dentro do app — o assessor nunca
