@@ -195,7 +195,7 @@ const ITENS_NAV = {
     apos: { label: "Planejamento de Aposentadoria", icon: icons.iconMeta },
     pdfedit: { label: "Editor de PDF", icon: icons.iconEditarPDF },
     imgpdf: { label: "Imagens em PDF", icon: icons.iconImagensPDF },
-    icp: { label: "Validar Assinatura", icon: icons.iconAssinatura },
+    icp: { label: "Validar Assinatura", icon: icons.iconValidarAssinatura },
 };
 const ORDEM_NAV_PADRAO = [
     "rent", "mail", "des", "apres", "typ", "calc", "cmp", "prev", "comp", "apos", "pdfedit", "imgpdf", "icp",
@@ -632,7 +632,7 @@ function montarAbaTemas() {
 
 const MODOS_EMAIL = [
     { id: "padronizado", label: "Padronizado (recomendado)", desc: "Cada e-mail tem só um produto e tipo de movimentação, seguindo os modelos de compliance." },
-    { id: "livre", label: "Livre", desc: "Comportamento antigo: cada operação escolhe seu próprio produto, permitindo misturar vários num só e-mail." },
+    { id: "livre", label: "Livre", desc: "Cada operação escolhe seu próprio produto, permitindo misturar vários num só e-mail." },
 ];
 
 function montarAbaEmail() {
@@ -745,7 +745,7 @@ function montarAbaEmail() {
 
 const TABELAS_PREVIDENCIARIAS = [
     { id: "2026", label: "2026", desc: "Faixas de IRPF/INSS vigentes e o redutor de IR criado pela Lei 15.270/2025." },
-    { id: "2022", label: "2022", desc: "Valores originais da planilha de referência (sem o redutor de 2025)." },
+    { id: "2022", label: "2022", desc: "Valores referentes às regras vigentes a partir do ano de 2022." },
 ];
 
 function montarAbaTabelaPrevidenciaria() {
@@ -1100,19 +1100,15 @@ function montarAbaOrdemNav() {
 
 function montarAbaSobre() {
     const body = el("div", {});
-    body.appendChild(el("h3", { class: "cfg-h", text: "Sobre esta ferramenta" }));
 
-    const paragrafos = [
-        "Este aplicativo é um projeto pessoal, desenvolvido por Gustavo em seu tempo livre, como ferramenta de uso próprio — não se destina a uso comercial.",
-        "Dúvidas ou sugestões são bem-vindas a qualquer momento. Em caso de bug, posso ajudar a resolver ou corrigi-lo no meu tempo livre, desde que não atrapalhe minha função como assessor comercial. Se sentir falta de alguma ferramenta que ajudaria no fluxo de trabalho do time, fique à vontade para sugerir.",
-        "Importante: este é um projeto pessoal, não uma ferramenta implementada pelo time de tecnologia nem divulgada oficialmente pela XP.",
-    ];
-    for (const texto of paragrafos) {
-        body.appendChild(el("p", { class: "cfg-placeholder", text: texto }));
-    }
-
-    body.appendChild(el("h3", { class: "cfg-h", text: "Versão" }));
-    body.appendChild(el("p", { class: "cfg-sub", text: `Versão instalada: ${state.versaoApp || "desconhecida"}` }));
+    body.appendChild(
+        el("div", { style: "display:flex;align-items:center;gap:11px;margin-bottom:3px;" }, [
+            el("img", { src: brandIconUrl, alt: "Ferramentas de Assessoria", style: "width:38px;height:38px;border-radius:11px;flex:none;" }),
+            el("h3", { class: "cfg-h", style: "margin:0;", text: "Ferramentas de Assessoria" }),
+        ])
+    );
+    body.appendChild(el("p", { class: "cfg-sub", style: "margin:0;", text: `Versão ${state.versaoApp || "desconhecida"}` }));
+    body.appendChild(el("p", { class: "cfg-sub", style: "margin:3px 0 0;", text: "Desenvolvido por Gustavo De Medeiros" }));
 
     const resultado = el("p", { class: "cfg-sub" });
     const botaoVerificar = btn("Verificar atualizações agora", { icon: icons.iconAtualizar });
@@ -1135,8 +1131,37 @@ function montarAbaSobre() {
         }
         botaoVerificar.disabled = false;
     });
-    body.appendChild(botaoVerificar);
+    body.appendChild(el("div", { style: "margin-top:13px;" }, [botaoVerificar]));
     body.appendChild(resultado);
+
+    const grupos = [
+        [
+            "Descrição",
+            "Ferramenta de apoio à rotina de assessoria, com recursos de geração de e-mails, processamento de documentos e validação de assinaturas digitais. Todo o processamento é executado localmente na máquina do usuário.",
+        ],
+        [
+            "Suporte e sugestões",
+            "Relatos de bug e pedidos de novas funcionalidades podem ser enviados diretamente ao desenvolvedor. As correções são feitas conforme disponibilidade, fora do horário dedicado às atividades de assessor comercial.",
+        ],
+        [
+            "Aviso legal",
+            "Software independente, desenvolvido em caráter pessoal e sem fins comerciais. Não foi desenvolvido, homologado, mantido ou divulgado pelo time de tecnologia da XP Investimentos. O uso é por conta e risco do usuário.",
+        ],
+    ];
+    grupos.forEach(([titulo, texto], i) => {
+        const grp = el("div", { class: "cfg-grp", style: i === 0 ? "margin-top:22px;" : "" });
+        grp.appendChild(el("div", { class: "cfg-grp-lbl", text: titulo }));
+        grp.appendChild(el("p", { class: "cfg-placeholder", style: "margin:0;", text: texto }));
+        body.appendChild(grp);
+    });
+
+    body.appendChild(
+        el("p", {
+            class: "cfg-sub",
+            style: "margin:0; padding-top:14px; border-top:1px solid var(--line-2);",
+            text: "© 2026 Gustavo De Medeiros — Uso interno, sem distribuição.",
+        })
+    );
 
     return body;
 }
