@@ -2,6 +2,7 @@ package selfupdate
 
 import (
 	"context"
+	"encoding/hex"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -141,6 +142,27 @@ func TestUltimaVersaoStatusNaoOK(t *testing.T) {
 	_, _, err := UltimaVersao(context.Background())
 	if err == nil {
 		t.Fatal("esperava erro com status 404")
+	}
+}
+
+// O sha256sum do runner Windows escreve em modo binário: "hash *arquivo"
+// (com asterisco), diferente do "hash  arquivo" de duas casas do shasum do
+// macOS. Os dois precisam funcionar — é o CI que gera esses arquivos.
+func TestBaixarChecksumFormatoBinarioDoSha256sum(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("c8cb9c9763d446551c5bed892aa287d0b73238d25bf26216d4a723b8c5abc6f8 *FerramentasAssessoria-1.02.00.exe\n"))
+	}))
+	defer srv.Close()
+
+	dados, err := baixarChecksum(context.Background(), srv.URL)
+	if err != nil {
+		t.Fatalf("baixarChecksum: %v", err)
+	}
+	if len(dados) != 32 {
+		t.Fatalf("esperado hash de 32 bytes, veio %d — o asterisco do modo binário provavelmente entrou no hash", len(dados))
+	}
+	if got := hex.EncodeToString(dados); got != "c8cb9c9763d446551c5bed892aa287d0b73238d25bf26216d4a723b8c5abc6f8" {
+		t.Errorf("hash decodificado = %q", got)
 	}
 }
 
