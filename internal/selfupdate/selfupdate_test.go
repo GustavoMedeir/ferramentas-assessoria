@@ -72,6 +72,41 @@ func TestUltimaVersaoComAssetsCompletos(t *testing.T) {
 	}
 }
 
+// Desde que a release passou a levar o pacote do macOS junto, ela tem dois
+// arquivos .sha256. O do Windows precisa casar com o .exe — pegar o do Mac
+// faria a conferência falhar e a atualização morrer como "arquivo
+// corrompido" pra todo mundo.
+func TestUltimaVersaoEscolheOChecksumDoExeQuandoHaAssetDoMac(t *testing.T) {
+	servidorFakeGitHub(t, releaseGitHub{
+		TagName: "v1.02.00",
+		Assets: []struct {
+			Name               string `json:"name"`
+			BrowserDownloadURL string `json:"browser_download_url"`
+		}{
+			// O do Mac vem ANTES de propósito: com a varredura antiga, que
+			// aceitava qualquer .sha256, ele venceria.
+			{Name: "FerramentasAssessoria-1.02.00-macOS.zip", BrowserDownloadURL: "https://example.com/mac.zip"},
+			{Name: "FerramentasAssessoria-1.02.00-macOS.zip.sha256", BrowserDownloadURL: "https://example.com/mac.zip.sha256"},
+			{Name: "FerramentasAssessoria-1.02.00.exe", BrowserDownloadURL: "https://example.com/app.exe"},
+			{Name: "FerramentasAssessoria-1.02.00.exe.sha256", BrowserDownloadURL: "https://example.com/app.exe.sha256"},
+		},
+	})
+
+	info, encontrado, err := UltimaVersao(context.Background())
+	if err != nil {
+		t.Fatalf("UltimaVersao: %v", err)
+	}
+	if !encontrado {
+		t.Fatal("esperava encontrado=true")
+	}
+	if info.URLExe != "https://example.com/app.exe" {
+		t.Errorf("URLExe = %q, esperado o .exe do Windows", info.URLExe)
+	}
+	if info.URLChecksum != "https://example.com/app.exe.sha256" {
+		t.Errorf("URLChecksum = %q, esperado o checksum DO EXE (não o do zip do Mac)", info.URLChecksum)
+	}
+}
+
 func TestUltimaVersaoSemAssetDeChecksum(t *testing.T) {
 	// Release publicada pela metade (ex.: upload do .exe terminou mas o do
 	// .sha256 ainda não) não deve ser oferecida como atualização.

@@ -86,7 +86,13 @@ export function mount(container, ctx) {
             el("h3", { text: "E-mail gerado" }),
             el("div", { class: "mail-r-actions" }, [
                 btn("Copiar texto", { classe: "pri", icon: icons.iconCopiar, onClick: copiarTexto }),
-                btn("Abrir no Outlook", { classe: "pri", icon: icons.iconEmail, onClick: abrirNoOutlook }),
+                // O rascunho no Outlook usa automação COM, que só existe no
+                // Windows — no macOS o botão nem aparece, em vez de aparecer
+                // e falhar no clique. Lá o fluxo é "Copiar texto" e colar no
+                // cliente de e-mail.
+                state.plataforma === "windows"
+                    ? btn("Abrir no Outlook", { classe: "pri", icon: icons.iconEmail, onClick: abrirNoOutlook })
+                    : null,
             ]),
         ])
     );

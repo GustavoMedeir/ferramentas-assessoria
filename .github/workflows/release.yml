@@ -1,0 +1,120 @@
+# Gera os instaláveis de Windows e macOS a cada tag de versão e anexa os
+# dois na Release correspondente.
+#
+# Por que isto existe: o Wails NÃO cross-compila para macOS ("Crosscompiling
+# to Mac not currently supported") — o .app precisa ser montado numa máquina
+# macOS. Como o repositório é público, os runners macOS do GitHub são
+# gratuitos, então a versão Mac sai automaticamente sem ninguém do time
+# precisar compilar à mão.
+#
+# Disparo: `git push origin vX.YY.ZZ`. A versão vem da própria tag e é
+# injetada em main.Version — sem isso o binário fica com "dev" e a checagem
+# de atualização é pulada em silêncio (ver main.go).
+
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write # necessário pra anexar os arquivos na Release
+
+jobs:
+  windows:
+    name: Windows
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Instalar Wails
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.13.0
+
+      - name: Descobrir a versão a partir da tag
+        id: versao
+        shell: bash
+        run: echo "numero=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Compilar
+        shell: bash
+        run: wails build -ldflags "-X main.Version=${{ steps.versao.outputs.numero }}"
+
+      - name: Nomear com a versão e gerar checksum
+        shell: bash
+        working-directory: build/bin
+        run: |
+          nome="FerramentasAssessoria-${{ steps.versao.outputs.numero }}.exe"
+          mv FerramentasAssessoria.exe "$nome"
+          # Mesmo formato do sha256sum (hash, espaço, nome) que o app espera
+          # ao validar o download — ver internal/selfupdate/baixarChecksum.
+          sha256sum "$nome" > "$nome.sha256"
+          cat "$nome.sha256"
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            build/bin/FerramentasAssessoria-*.exe
+            build/bin/FerramentasAssessoria-*.exe.sha256
+
+  macos:
+    name: macOS
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Instalar Wails
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.13.0
+
+      - name: Descobrir a versão a partir da tag
+        id: versao
+        run: echo "numero=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      # universal = roda tanto em Mac Intel quanto Apple Silicon, num
+      # arquivo só. Evita ter que perguntar a cada pessoa qual é o chip dela.
+      - name: Compilar (universal)
+        run: wails build -platform darwin/universal -ldflags "-X main.Version=${{ steps.versao.outputs.numero }}"
+
+      # Assinatura ad-hoc: NÃO é uma assinatura da Apple e não remove o
+      # aviso de segurança — mas é OBRIGATÓRIA pra o app sequer executar em
+      # Mac com Apple Silicon. Sem conta de desenvolvedor Apple, é o máximo
+      # possível; o usuário autoriza uma vez em Ajustes do Sistema →
+      # Privacidade e Segurança → "Abrir Assim Mesmo".
+      - name: Assinar (ad-hoc)
+        working-directory: build/bin
+        run: |
+          codesign --force --deep --sign - "Ferramentas de Assessoria.app"
+          codesign --verify --verbose "Ferramentas de Assessoria.app"
+
+      # O .app é uma PASTA. Precisa virar zip pra sobreviver ao download —
+      # e com `ditto`, não `zip`, senão os metadados do pacote se perdem e
+      # o macOS passa a tratar o app como corrompido.
+      - name: Empacotar e gerar checksum
+        working-directory: build/bin
+        run: |
+          nome="FerramentasAssessoria-${{ steps.versao.outputs.numero }}-macOS.zip"
+          ditto -c -k --sequesterRsrc --keepParent "Ferramentas de Assessoria.app" "$nome"
+          shasum -a 256 "$nome" > "$nome.sha256"
+          cat "$nome.sha256"
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            build/bin/FerramentasAssessoria-*-macOS.zip
+            build/bin/FerramentasAssessoria-*-macOS.zip.sha256

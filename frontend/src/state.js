@@ -28,6 +28,7 @@ export const state = {
     calcRF: {}, // {"calcrf.campo": "texto digitado"} — persiste ao trocar de aba (Calculadora de Renda Fixa)
     typeform: {}, // {"typ.<numero>": resposta} — persiste ao trocar de aba (aba Typeform)
     versaoApp: "", // preenchido no boot via VersaoAtual() — "dev" fora de um build de release (ver main.go)
+    plataforma: "windows", // "windows" | "darwin" — decide o que existe na interface (ver ABAS_SO_WINDOWS em main.js)
     atualizacao: { disponivel: false, versao: "", notas: "" }, // ver EventsOn("atualizacao:disponivel") em main.js
     prefs: {
         tema: "claro",

@@ -126,6 +126,10 @@ export function ObterPreviaPaginaGraficoRentabilidade(arg1) {
   return window['go']['main']['App']['ObterPreviaPaginaGraficoRentabilidade'](arg1);
 }
 
+export function Plataforma() {
+  return window['go']['main']['App']['Plataforma']();
+}
+
 export function PreencherTypeform(arg1) {
   return window['go']['main']['App']['PreencherTypeform'](arg1);
 }

@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	goruntime "runtime"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -1478,6 +1479,15 @@ func (a *App) VersaoAtual() string {
 	return Version
 }
 
+// Plataforma devolve o sistema em que o app está rodando ("windows" ou
+// "darwin"). O frontend usa isso pra esconder o que não existe no macOS:
+// a aba Typeform (depende do Edge nos caminhos do Windows) e o botão
+// "Abrir no Outlook" (automação COM). Esconder é melhor que deixar o botão
+// lá e falhar no clique.
+func (a *App) Plataforma() string {
+	return goruntime.GOOS
+}
+
 // VerificarAtualizacao dispara uma checagem manual (botão "Verificar
 // agora" em Configurações → Sobre). Falha de rede vira AtualizacaoDTO.Erro,
 // não Go error — mesma convenção de AtualizarCadeiaICP, checagem de
@@ -1490,6 +1500,24 @@ func (a *App) VerificarAtualizacao() AtualizacaoDTO {
 func (a *App) checarAtualizacao(ctx context.Context) AtualizacaoDTO {
 	if Version == "dev" {
 		return AtualizacaoDTO{Erro: "Build de desenvolvimento — sem versão de release pra comparar."}
+	}
+	// A atualização automática é só do Windows, e a trava é DELIBERADA:
+	//
+	//  1. selfupdate.UltimaVersao escolhe o asset pelo sufixo ".exe" — no
+	//     macOS ele baixaria o binário do Windows e sobrescreveria o app
+	//     com um executável que não roda.
+	//  2. No macOS o programa vive dentro de um pacote .app assinado (ainda
+	//     que com assinatura ad-hoc, obrigatória no Apple Silicon). Trocar
+	//     só o binário de dentro invalida a assinatura e o sistema passa a
+	//     recusar a abertura — quebraria o app do assessor de vez.
+	//
+	// Enquanto a atualização de pacote .app não estiver implementada, o Mac
+	// avisa que existe versão nova e manda baixar à mão.
+	if goruntime.GOOS != "windows" {
+		return AtualizacaoDTO{
+			Erro: "No macOS a atualização é manual: baixe a versão mais recente em " +
+				"https://github.com/" + selfupdate.Repositorio + "/releases/latest",
+		}
 	}
 
 	info, encontrado, err := selfupdate.UltimaVersao(ctx)

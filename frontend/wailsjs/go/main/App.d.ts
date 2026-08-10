@@ -64,6 +64,8 @@ export function ObterInfoCadeiaICP():Promise<main.InfoCadeiaDTO>;
 
 export function ObterPreviaPaginaGraficoRentabilidade(arg1:string):Promise<string>;
 
+export function Plataforma():Promise<string>;
+
 export function PreencherTypeform(arg1:Array<main.ItemRespostaTypeformDTO>):Promise<void>;
 
 export function ProcessarPastaAtual():Promise<main.ProcessamentoDTO>;

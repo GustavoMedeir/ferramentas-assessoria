@@ -14,6 +14,7 @@ import {
     AdicionarAssinatura,
     SelecionarAssinaturaAtiva,
     RemoverAssinatura,
+    Plataforma,
     VersaoAtual,
     VerificarAtualizacao,
     AplicarAtualizacao,
@@ -206,10 +207,20 @@ const ORDEM_NAV_PADRAO = [
 // descartados; IDs novos que não estavam salvos entram no fim, na posição
 // que teriam na ordem padrão — assim uma ferramenta nova sempre aparece,
 // mesmo pra quem já personalizou a ordem antes dela existir.
+// Ferramentas que só existem no Windows, porque dependem de programas de
+// lá: o Typeform é preenchido controlando o Microsoft Edge nos caminhos de
+// instalação do Windows. No macOS a aba nem entra na lista — some da barra
+// lateral e de Configurações → Ordem da barra lateral.
+const ABAS_SO_WINDOWS = ["typ"];
+
+function abaDisponivelNaPlataforma(id) {
+    return state.plataforma === "windows" || !ABAS_SO_WINDOWS.includes(id);
+}
+
 function ordemNavAtual() {
     const salva = state.prefs.ordemNav && state.prefs.ordemNav.length ? state.prefs.ordemNav : ORDEM_NAV_PADRAO;
-    const validos = salva.filter((id) => ITENS_NAV[id]);
-    const faltando = ORDEM_NAV_PADRAO.filter((id) => !validos.includes(id));
+    const validos = salva.filter((id) => ITENS_NAV[id] && abaDisponivelNaPlataforma(id));
+    const faltando = ORDEM_NAV_PADRAO.filter((id) => !validos.includes(id) && abaDisponivelNaPlataforma(id));
     return [...validos, ...faltando];
 }
 
@@ -1399,6 +1410,15 @@ function ativarSecao(id) {
 async function main() {
     clear(appRoot);
     aplicarTema();
+
+    // Antes de montar a barra lateral: é a plataforma que decide se a aba
+    // Typeform entra na lista (ela depende do Microsoft Edge instalado nos
+    // caminhos do Windows, que não existem no macOS).
+    try {
+        state.plataforma = await Plataforma();
+    } catch {
+        state.plataforma = "windows"; // esconde o mínimo possível se a chamada falhar
+    }
 
     dom.side = montarSidebar();
     appRoot.appendChild(dom.side);

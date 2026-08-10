@@ -94,15 +94,33 @@ func UltimaVersao(ctx context.Context) (info ReleaseInfo, encontrado bool, err e
 	}
 
 	info = ReleaseInfo{Versao: rel.TagName, Notas: rel.Body}
+
+	// Acha primeiro o executável do Windows. Desde que a release passou a
+	// levar também o pacote do macOS, ela tem MAIS DE UM arquivo .sha256
+	// — um do .exe e outro do .zip do Mac. Pegar "qualquer .sha256", como
+	// era feito antes, dava chance de casar o executável do Windows com o
+	// checksum do Mac: a conferência falharia e a atualização morreria com
+	// erro de arquivo corrompido.
+	var nomeExe string
 	for _, a := range rel.Assets {
-		switch {
-		case strings.HasSuffix(a.Name, ".exe"):
+		if strings.HasSuffix(a.Name, ".exe") {
+			nomeExe = a.Name
 			info.URLExe = a.BrowserDownloadURL
-		case strings.HasSuffix(a.Name, ".sha256"):
-			info.URLChecksum = a.BrowserDownloadURL
+			break
 		}
 	}
-	if info.URLExe == "" || info.URLChecksum == "" {
+	if nomeExe == "" {
+		return info, false, nil
+	}
+
+	// Só serve o checksum DAQUELE executável: "<nome do exe>.sha256".
+	for _, a := range rel.Assets {
+		if a.Name == nomeExe+".sha256" {
+			info.URLChecksum = a.BrowserDownloadURL
+			break
+		}
+	}
+	if info.URLChecksum == "" {
 		return info, false, nil
 	}
 	return info, true, nil
