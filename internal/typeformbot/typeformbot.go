@@ -86,6 +86,20 @@ func localizarEdge() (string, error) {
 	return "", fmt.Errorf("Microsoft Edge não encontrado nos caminhos padrão de instalação (ele já vem com o Windows — se foi removido, reinstale)")
 }
 
+// saidaParaLog encaminha o que o Edge escreve na saída de erro pro log do
+// app, linha a linha e com prefixo — é por onde o navegador conta por que
+// se recusou a subir (política corporativa, perfil bloqueado, porta de
+// depuração barrada por antivírus/EDR).
+type saidaParaLog struct{}
+
+func (saidaParaLog) Write(p []byte) (int, error) {
+	texto := strings.TrimRight(string(p), "\r\n")
+	if texto != "" {
+		log.Println("typeform [edge]:", texto)
+	}
+	return len(p), nil
+}
+
 // aguardarConteudo espera a página realmente ter conteúdo utilizável (algum
 // botão visível ou algum bloco de pergunta), em vez de confiar num sleep
 // fixo.
@@ -140,6 +154,13 @@ func Preencher(urlFormulario string, respostas []Resposta, progresso EventoProgr
 		chromedp.Flag("headless", false),
 		chromedp.Flag("start-maximized", true),
 		chromedp.Flag("disable-extensions", true),
+		// Manda a saída do próprio Edge pro app.log. Quando o navegador se
+		// recusa a subir, o chromedp só devolve "chrome failed to start:"
+		// seguido do que o Edge tiver escrito — e sem isso essa parte vinha
+		// vazia, deixando a falha sem diagnóstico nenhum (caso real: erro
+		// numa máquina de assessor sem nenhuma pista do motivo). Em
+		// funcionamento normal o Edge quase não escreve nada aqui.
+		chromedp.CombinedOutput(saidaParaLog{}),
 	)
 	// Sem cancel por defer aqui de propósito: a janela precisa continuar
 	// aberta depois que esta função retornar, com ou sem erro — ver

@@ -12,7 +12,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"os/exec"
 	"strconv"
 	"strings"
 	"time"
@@ -176,18 +175,29 @@ func BaixarEAplicar(ctx context.Context, info ReleaseInfo) error {
 	return nil
 }
 
-// Relancar inicia uma nova instância do executável atual — depois de
-// BaixarEAplicar, isso já é o binário novo em disco — como processo
-// separado e desanexado. O chamador ainda precisa encerrar o processo
-// corrente (ex. runtime.Quit do Wails) logo em seguida: com
-// SingleInstanceLock ativo, a nova instância só consegue abrir a janela
-// dela depois que a antiga soltar o lock.
+// Relancar reabre o app depois da atualização, ESPERANDO a instância atual
+// morrer antes de subir a nova.
+//
+// A espera não é detalhe: o app roda com SingleInstanceLock (ver main.go).
+// Subir a nova instância imediatamente — como esta função fazia antes —
+// fazia a nova detectar a antiga ainda viva, mandar o "traga a janela pra
+// frente" pra ela e ENCERRAR. Em seguida a antiga também encerrava (o
+// chamador chama runtime.Quit logo depois), e o resultado era o app sumir
+// da tela e não voltar: o assessor clicava em "Atualizar agora" e ficava
+// sem o programa aberto, achando que a atualização o tinha apagado (bug
+// relatado em campo).
+//
+// Por isso quem relança é um processo intermediário do próprio Windows,
+// que espera alguns segundos e só então inicia o executável — a essa
+// altura o processo atual já saiu e liberou a trava. Ele nasce sem janela
+// de console (ver relancarComEspera_windows.go) pra não piscar um prompt
+// preto na cara do usuário.
 func Relancar() error {
 	caminho, err := os.Executable()
 	if err != nil {
 		return err
 	}
-	return exec.Command(caminho, os.Args[1:]...).Start()
+	return relancarComEspera(caminho)
 }
 
 // baixarChecksum lê o conteúdo do asset .sha256 — convencionalmente o hash
