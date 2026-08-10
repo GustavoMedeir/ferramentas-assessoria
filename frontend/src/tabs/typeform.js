@@ -489,7 +489,13 @@ async function enviarParaTypeform(ctx) {
         // ErroParado em internal/typeformbot. Um erro de verdade (Edge não
         // encontrado, formulário não abriu) também aparece aqui, só que
         // sem o prefixo "parei em".
-        ctx.setStatus("Typeform: " + e);
+        const texto = String(e);
+        ctx.setStatus("Typeform: " + texto.split("\n")[0]);
+        // Mensagens longas (ex.: a de página em branco, que explica como
+        // testar a rede) não cabem na barra de status — essas vão num
+        // alerta, senão o assessor não chega a ler justamente a parte que
+        // diz o que fazer.
+        if (texto.includes("\n")) alert(texto);
     }
 }
 

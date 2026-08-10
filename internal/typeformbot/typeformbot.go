@@ -17,12 +17,15 @@ package typeformbot
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/chromedp/cdproto/cdp"
+	"github.com/chromedp/cdproto/page"
 	"github.com/chromedp/chromedp"
 
 	"rentabilidade/internal/pdfreport"
@@ -68,12 +71,54 @@ func localizarEdge() (string, error) {
 		`C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe`,
 		`C:\Program Files\Microsoft\Edge\Application\msedge.exe`,
 	}
+	// Instalação por usuário (sem admin) fica em %LOCALAPPDATA% — não é o
+	// padrão, mas acontece em máquina onde o Edge foi reinstalado sem
+	// privilégio de administrador, e sem isso o app falhava dizendo que o
+	// Edge não existe numa máquina onde ele existe.
+	if local, err := os.UserCacheDir(); err == nil {
+		candidatos = append(candidatos, filepath.Join(local, `Microsoft\Edge\Application\msedge.exe`))
+	}
 	for _, c := range candidatos {
 		if _, err := os.Stat(c); err == nil {
 			return c, nil
 		}
 	}
 	return "", fmt.Errorf("Microsoft Edge não encontrado nos caminhos padrão de instalação (ele já vem com o Windows — se foi removido, reinstale)")
+}
+
+// aguardarConteudo espera a página realmente ter conteúdo utilizável (algum
+// botão visível ou algum bloco de pergunta), em vez de confiar num sleep
+// fixo.
+//
+// Existe por causa de um bug relatado em campo: em algumas máquinas o Edge
+// abria numa página em branco e o robô, que só esperava 450ms e não checava
+// nada, lia um DOM vazio, não achava botão nenhum pra clicar e encerrava
+// reportando SUCESSO — o app dizia "preenchimento concluído" com a tela
+// vazia na frente do assessor. Agora a ausência de conteúdo é detectada e
+// vira erro explicativo (ver o uso em Preencher).
+func aguardarConteudo(ctx context.Context, limite time.Duration) (bool, error) {
+	const sonda = `(function(){
+	var visiveis = Array.from(document.querySelectorAll('button')).filter(function(b){
+		var r = b.getBoundingClientRect(); return r.width > 0 && r.height > 0;
+	});
+	return visiveis.length > 0 || document.querySelectorAll('[data-qa*="blocktype-"]').length > 0;
+})()`
+	fim := time.Now().Add(limite)
+	for {
+		var temConteudo bool
+		if err := chromedp.Run(ctx, chromedp.Evaluate(sonda, &temConteudo)); err != nil {
+			return false, err
+		}
+		if temConteudo {
+			return true, nil
+		}
+		if time.Now().After(fim) {
+			return false, nil
+		}
+		if err := chromedp.Run(ctx, chromedp.Sleep(250*time.Millisecond)); err != nil {
+			return false, err
+		}
+	}
 }
 
 // Preencher abre urlFormulario no Edge (janela visível), percorre as telas
@@ -105,8 +150,36 @@ func Preencher(urlFormulario string, respostas []Resposta, progresso EventoProgr
 	ctxComPrazo, cancelPrazo := context.WithTimeout(ctx, 20*time.Minute)
 	defer cancelPrazo()
 
+	log.Println("typeform: abrindo", urlFormulario, "no Edge em", edge)
 	if err := chromedp.Run(ctxComPrazo, chromedp.Navigate(urlFormulario)); err != nil {
 		return fmt.Errorf("abrir formulário no navegador: %w", err)
+	}
+
+	// Traz a aba controlada pra frente: se a janela do Edge tiver mais de
+	// uma aba (perfil restaurando sessão, página inicial corporativa), a
+	// automação pode estar dirigindo uma aba que não é a visível — o
+	// assessor veria uma tela parada enquanto o robô trabalha em outra.
+	if err := chromedp.Run(ctxComPrazo, chromedp.ActionFunc(func(c context.Context) error {
+		return page.BringToFront().Do(c)
+	})); err != nil {
+		log.Println("typeform: não foi possível trazer a aba pra frente (seguindo mesmo assim):", err)
+	}
+
+	// A página em branco relatada em campo morre aqui, com mensagem útil,
+	// em vez de virar um "concluído" silencioso lá na frente.
+	temConteudo, err := aguardarConteudo(ctxComPrazo, 30*time.Second)
+	if err != nil {
+		return fmt.Errorf("verificar se o formulário carregou: %w", err)
+	}
+	if !temConteudo {
+		var urlAtual string
+		_ = chromedp.Run(ctxComPrazo, chromedp.Location(&urlAtual))
+		log.Println("typeform: página sem conteúdo depois de 30s; url atual =", urlAtual)
+		return fmt.Errorf(
+			"o formulário não carregou nesta máquina — a página ficou em branco (endereço atual: %s).\n\n"+
+				"Isso costuma ser bloqueio de rede: teste abrir %s no Edge manualmente. "+
+				"Se pedir login de proxy ou não abrir, é a rede/política da máquina que está barrando.",
+			urlAtual, urlFormulario)
 	}
 
 	usadas := make([]bool, len(respostas))
@@ -140,6 +213,22 @@ func Preencher(urlFormulario string, respostas []Resposta, progresso EventoProgr
 				tentativasCliqueGenerico++
 				continue
 			}
+			// Chegar aqui sem ter preenchido NADA não é "fim do
+			// formulário": é o robô não ter entendido a tela nenhuma vez.
+			// Reportar sucesso nesse caso era o bug relatado em campo — o
+			// app dizia "preenchimento concluído" com a tela intocada na
+			// frente do assessor, sem nenhuma pista do que houve.
+			if feitos == 0 {
+				log.Println("typeform: nenhuma pergunta reconhecida na primeira tela útil — encerrando com aviso")
+				return &ErroParado{
+					Pergunta: "",
+					Motivo: "não consegui reconhecer nenhuma pergunta do formulário — ele pode ter mudado de formato, " +
+						"ou a página não terminou de carregar nesta máquina. Preencha manualmente desta vez",
+				}
+			}
+			// Com perguntas já preenchidas, cair aqui é o fim normal do
+			// formulário (tela de agradecimento).
+			log.Println("typeform: fim do formulário depois de", feitos, "pergunta(s)")
 			return nil
 		}
 		tentativasCliqueGenerico = 0
