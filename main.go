@@ -9,6 +9,7 @@ import (
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	"github.com/wailsapp/wails/v2/pkg/options/windows"
 )
 
 //go:embed all:frontend/dist
@@ -57,6 +58,18 @@ func main() {
 			UniqueId:               "ferramentas-assessoria-xp-gutomeireles",
 			OnSecondInstanceLaunch: app.aoAbrirSegundaInstancia,
 		},
+		// O WebView2 guarda o zoom por conta do usuário e o restaura na
+		// abertura seguinte: um Ctrl+scroll acidental (ou o zoom herdado do
+		// Edge da máquina) fazia o app abrir com a interface esticada ou
+		// minúscula, sem o usuário entender o motivo. Fixar o ZoomFactor
+		// aqui faz toda abertura começar no mesmo tamanho, em qualquer
+		// máquina. IsZoomControlEnabled fica ligado de propósito — quem
+		// quiser dar zoom pontualmente continua podendo; o valor só não
+		// sobrevive ao fechamento.
+		Windows: &windows.Options{
+			ZoomFactor:           0.85,
+			IsZoomControlEnabled: true,
+		},
 		Bind: []interface{}{
 			app,
 		},
@@ -91,7 +104,20 @@ func redirecionarStdioParaArquivo() {
 		return
 	}
 
-	arquivo, err := os.OpenFile(filepath.Join(logDir, "app.log"), os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+	// Abre em modo APPEND, não O_TRUNC: com truncate, o log de uma falha
+	// morria no instante em que o assessor reabria o app pra tentar de
+	// novo — que é exatamente o que ele faz antes de pedir ajuda. Ficamos
+	// sem o registro justo do problema que queríamos investigar.
+	//
+	// Pra o arquivo não crescer pra sempre, ele é zerado quando passa de
+	// limiteLogBytes: as sessões recentes cabem de sobra nesse tamanho.
+	caminhoLog := filepath.Join(logDir, "app.log")
+	const limiteLogBytes = 2 << 20 // 2MB
+	if info, err := os.Stat(caminhoLog); err == nil && info.Size() > limiteLogBytes {
+		os.Remove(caminhoLog)
+	}
+
+	arquivo, err := os.OpenFile(caminhoLog, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
 		return
 	}
@@ -99,4 +125,8 @@ func redirecionarStdioParaArquivo() {
 	os.Stdout = arquivo
 	os.Stderr = arquivo
 	log.SetOutput(arquivo)
+
+	// Com o log acumulando várias sessões, é preciso saber onde cada
+	// abertura começa e qual versão a gerou.
+	log.Printf("=== Ferramentas de Assessoria %s — sessão iniciada ===", Version)
 }
