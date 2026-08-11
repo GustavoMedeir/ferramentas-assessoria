@@ -9,7 +9,6 @@ require (
 	github.com/go-ole/go-ole v1.3.0
 	github.com/go-pdf/fpdf v0.9.0
 	github.com/klippa-app/go-pdfium v1.19.4
-	github.com/minio/selfupdate v0.6.0
 	github.com/smallstep/pkcs7 v0.2.3
 	github.com/tetratelabs/wazero v1.12.0
 	github.com/wailsapp/wails/v2 v2.13.0
@@ -19,7 +18,6 @@ require (
 )
 
 require (
-	aead.dev/minisign v0.2.0 // indirect
 	git.sr.ht/~jackmordaunt/go-toast/v2 v2.0.3 // indirect
 	github.com/bep/debounce v1.2.1 // indirect
 	github.com/chromedp/sysutil v1.1.0 // indirect

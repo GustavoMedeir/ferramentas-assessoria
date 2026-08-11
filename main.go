@@ -33,16 +33,19 @@ var assets embed.FS
 var Version = "dev"
 
 func main() {
+	// Redireciona o log antes de checar a flag abaixo: a instância ajudante
+	// (ver internal/selfupdate/relancar_windows.go) também escreve nesse
+	// mesmo app.log — é o único jeito de diagnosticar se o executável
+	// atualizado sumiu (ex.: antivírus) antes dela conseguir reabrir o app.
+	redirecionarStdioParaArquivo()
+
 	// Esta execução pode ser a instância ajudante que a própria atualização
-	// automática sobe pra relançar o app (ver
-	// internal/selfupdate/relancar_windows.go) — nesse caso ela só espera e
-	// reabre o executável de verdade, sem inicializar o Wails/janela nem
-	// tocar no log.
+	// automática sobe pra relançar o app — nesse caso ela só espera, confere
+	// se o executável atualizado ainda está no lugar e reabre, sem nunca
+	// inicializar o Wails/janela.
 	if selfupdate.ExecutarSeAjudanteDeRelancamento(os.Args) {
 		return
 	}
-
-	redirecionarStdioParaArquivo()
 
 	// Create an instance of the app structure
 	app := NewApp()

@@ -31,10 +31,11 @@ O app se atualiza sozinho: alguns segundos depois de abrir, ele verifica em segu
 há uma release mais nova aqui no repositório, e repete essa checagem todo dia às 18h (horário
 da máquina) enquanto continuar aberto — cobre quem deixa o app aberto o dia inteiro sem
 reiniciar. Havendo atualização, aparece **"Atualização disponível"** na barra lateral com as
-notas da versão; ao confirmar, o app baixa o novo executável, valida o checksum SHA-256, se
-substitui e reabre — sem instalador, sem permissão de administrador e sem perder
-configurações. Se algo falhar no meio, ele continua na versão atual (a troca só acontece
-depois do download ser validado).
+notas da versão; ao confirmar, o app baixa o novo executável pra dentro da pasta **Downloads**,
+valida o checksum SHA-256, atualiza o atalho da área de trabalho pra apontar pro arquivo novo
+e reabre a partir dele — sem instalador, sem permissão de administrador e sem perder
+configurações. O executável em uso nunca é sobrescrito: se algo interferir no download (ex.
+antivírus), o app volta sozinho pra versão anterior, que nunca chegou a ser tocada.
 
 Também é possível checar na hora em **Configurações → Sobre**, onde fica a versão instalada.
 

@@ -1,22 +1,23 @@
 // Package selfupdate checa releases publicadas num repositório público do
 // GitHub e, quando há uma versão mais nova, baixa o novo executável e
-// substitui o binário em uso — sem instalador, sem intervenção manual do
+// relança o app a partir dele — sem instalador, sem intervenção manual do
 // assessor além de clicar em "Atualizar agora" no app.
 package selfupdate
 
 import (
+	"bytes"
 	"context"
+	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/minio/selfupdate"
 )
 
 // Repositorio é o "owner/repo" público no GitHub onde as releases (o .exe
@@ -156,72 +157,169 @@ func partesVersao(v string) [3]int {
 	return partes
 }
 
-// BaixarEAplicar baixa o .exe e o checksum descritos em info, confere um
-// contra o outro e substitui o executável em uso pelo novo. Se falhar
-// depois de já ter mexido no binário, tenta reverter sozinho (comportamento
-// da lib) — o chamador só precisa decidir o que dizer ao usuário.
-func BaixarEAplicar(ctx context.Context, info ReleaseInfo) error {
+// prefixoArquivo nomeia os executáveis baixados em Downloads — mesmo nome
+// base dos assets publicados pelo workflow de release (ver
+// .github/workflows/release.yml), então nomeArquivoVersionado("v1.04.06")
+// bate exatamente com o nome do asset "FerramentasAssessoria-1.04.06.exe".
+const prefixoArquivo = "FerramentasAssessoria-"
+
+// nomeArquivoVersionado monta o nome do executável baixado a partir da tag
+// da release, ex.: "v1.04.06" -> "FerramentasAssessoria-1.04.06.exe".
+func nomeArquivoVersionado(versao string) string {
+	return prefixoArquivo + strings.TrimPrefix(versao, "v") + ".exe"
+}
+
+// pastaDownloads localiza a pasta Downloads do usuário (%USERPROFILE%\Downloads
+// no Windows) — é onde o executável novo é baixado a cada atualização, ver
+// BaixarEAplicar.
+func pastaDownloads() (string, error) {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(home, "Downloads"), nil
+}
+
+// BaixarEAplicar baixa o .exe descrito em info pra dentro de Downloads, com
+// nome versionado (nunca sobrescreve o executável em uso — cada atualização
+// grava um arquivo novo), confere o checksum e devolve o caminho completo
+// do arquivo baixado, pronto pra Relancar.
+//
+// Isto substitui uma versão anterior que aplicava a atualização IN PLACE
+// (biblioteca minio/selfupdate: renomeava o executável em uso, movia o
+// novo pro lugar dele). Cada peça funcionava, mas "um processo reescreve o
+// próprio binário no disco" é, sozinho, um padrão que antivírus/EDR
+// heurísticos associam a dropper/malware auto-atualizável — e a troca em 2
+// passos (renomear o atual, mover o novo pro lugar) tinha uma janela onde
+// uma interferência externa (ex. antivírus apagando o arquivo novo — às
+// vezes de forma ASSÍNCRONA, segundos depois do Apply() já ter retornado
+// sucesso) podia deixar nenhum executável no caminho esperado: o atalho
+// que apontava pra lá ficava quebrado, e não havia como voltar atrás,
+// porque o binário antigo já tinha sido consumido pela troca.
+//
+// Baixando pra um arquivo NOVO em vez de substituir o que está rodando,
+// esse problema desaparece por construção: o executável atual nunca é
+// tocado, então mesmo que o arquivo novo seja apagado por um antivírus
+// segundos depois, ele continua aí, intacto, como fallback óbvio (ver
+// relancar_windows.go). O preço é que o atalho da área de trabalho
+// precisa ser reapontado pro arquivo novo a cada atualização — ver
+// internal/shortcut, chamado pelo relançador só depois de confirmar que o
+// arquivo novo sobreviveu.
+func BaixarEAplicar(ctx context.Context, info ReleaseInfo) (string, error) {
+	pasta, err := pastaDownloads()
+	if err != nil {
+		return "", fmt.Errorf("localizar pasta Downloads: %w", err)
+	}
+	return baixarEGravar(ctx, info, pasta)
+}
+
+func baixarEGravar(ctx context.Context, info ReleaseInfo, pastaDestino string) (string, error) {
 	checksum, err := baixarChecksum(ctx, info.URLChecksum)
 	if err != nil {
-		return fmt.Errorf("baixar checksum: %w", err)
+		return "", fmt.Errorf("baixar checksum: %w", err)
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, info.URLExe, nil)
 	if err != nil {
-		return err
+		return "", err
 	}
 	req.Header.Set("User-Agent", "FerramentasAssessoria-Updater")
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("baixar novo executável: %w", err)
+		return "", fmt.Errorf("baixar novo executável: %w", err)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("baixar novo executável: status %d", resp.StatusCode)
+		return "", fmt.Errorf("baixar novo executável: status %d", resp.StatusCode)
 	}
 
-	err = selfupdate.Apply(io.LimitReader(resp.Body, limiteTamanhoExe), selfupdate.Options{
-		Checksum: checksum,
-	})
+	dados, err := io.ReadAll(io.LimitReader(resp.Body, limiteTamanhoExe))
 	if err != nil {
-		if rerr := selfupdate.RollbackError(err); rerr != nil {
-			return fmt.Errorf("atualização falhou e não foi possível restaurar a versão anterior — reinstale manualmente: %w", rerr)
-		}
-		return fmt.Errorf("aplicar atualização: %w", err)
+		return "", fmt.Errorf("baixar novo executável: %w", err)
 	}
-	return nil
+
+	soma := sha256.Sum256(dados)
+	if !bytes.Equal(soma[:], checksum) {
+		return "", fmt.Errorf("executável baixado com checksum divergente — download incompleto ou corrompido, tente de novo")
+	}
+
+	if err := os.MkdirAll(pastaDestino, 0755); err != nil {
+		return "", fmt.Errorf("preparar pasta de destino: %w", err)
+	}
+	caminho := filepath.Join(pastaDestino, nomeArquivoVersionado(info.Versao))
+	if err := os.WriteFile(caminho, dados, 0755); err != nil {
+		return "", fmt.Errorf("gravar executável baixado: %w", err)
+	}
+	return caminho, nil
 }
 
-// Relancar reabre o app depois da atualização, ESPERANDO a instância atual
-// morrer antes de subir a nova.
+// LimparVersoesAntigas apaga, da pasta Downloads, executáveis baixados por
+// atualizações anteriores (mesmo prefixo de nome — ver
+// nomeArquivoVersionado), preservando o que está em uso agora
+// (os.Executable()). Chamada em segundo plano no startup do app (ver
+// app.go) — sem isso, Downloads acumularia um .exe (~30MB) a cada
+// atualização, pra sempre.
+func LimparVersoesAntigas() {
+	pasta, err := pastaDownloads()
+	if err != nil {
+		return
+	}
+	emUso, err := os.Executable()
+	if err != nil {
+		return
+	}
+	limparVersoesAntigas(pasta, emUso)
+}
+
+func limparVersoesAntigas(pasta, emUso string) {
+	entradas, err := os.ReadDir(pasta)
+	if err != nil {
+		return
+	}
+	for _, entrada := range entradas {
+		if entrada.IsDir() || !strings.HasPrefix(entrada.Name(), prefixoArquivo) {
+			continue
+		}
+		caminho := filepath.Join(pasta, entrada.Name())
+		if strings.EqualFold(caminho, emUso) {
+			continue
+		}
+		_ = os.Remove(caminho) // best-effort — se estiver em uso por outro motivo, tenta de novo na próxima
+	}
+}
+
+// Relancar reabre o app a partir de caminhoNovo (o executável recém-baixado
+// em Downloads — ver BaixarEAplicar), ESPERANDO a instância atual soltar o
+// SingleInstanceLock antes de subir a nova, e guardando o caminho do
+// executável ATUAL como fallback (ver relancar_windows.go:
+// ExecutarSeAjudanteDeRelancamento) — ele nunca é tocado por esta função,
+// então continua válido mesmo se caminhoNovo tiver desaparecido quando o
+// relançador for agir.
 //
 // A espera não é detalhe: o app roda com SingleInstanceLock (ver main.go).
-// Subir a nova instância imediatamente — como esta função fazia antes —
-// fazia a nova detectar a antiga ainda viva, mandar o "traga a janela pra
-// frente" pra ela e ENCERRAR. Em seguida a antiga também encerrava (o
-// chamador chama runtime.Quit logo depois), e o resultado era o app sumir
-// da tela e não voltar: o assessor clicava em "Atualizar agora" e ficava
-// sem o programa aberto, achando que a atualização o tinha apagado (bug
-// relatado em campo).
+// Subir a nova instância imediatamente fazia a nova detectar a antiga ainda
+// viva, mandar o "traga a janela pra frente" pra ela e ENCERRAR. Em
+// seguida a antiga também encerrava (o chamador chama runtime.Quit logo
+// depois), e o resultado era o app sumir da tela e não voltar (bug
+// relatado em campo, mais de uma vez).
 //
-// Por isso quem relança é um processo intermediário do próprio Windows,
-// que espera alguns segundos e só então inicia o executável — a essa
-// altura o processo atual já saiu e liberou a trava. Ele nasce sem janela
-// de console (ver relancarComEspera_windows.go) pra não piscar um prompt
-// preto na cara do usuário.
-func Relancar() error {
-	caminho, err := os.Executable()
+// Por isso quem relança é um processo intermediário — o próprio executável
+// ATUAL, reexecutado com uma flag interna reconhecida em main() — que
+// espera alguns segundos e só então decide qual executável abrir de
+// verdade. Nasce sem janela de console pra não piscar um prompt preto na
+// cara do usuário.
+func Relancar(caminhoNovo string) error {
+	caminhoAtual, err := os.Executable()
 	if err != nil {
 		return err
 	}
-	return relancarComEspera(caminho)
+	return relancarComEspera(caminhoNovo, caminhoAtual)
 }
 
 // baixarChecksum lê o conteúdo do asset .sha256 — convencionalmente o hash
 // hexadecimal, opcionalmente seguido de espaço e nome do arquivo (formato
-// do `sha256sum`) — e devolve só os bytes do hash, prontos pra
-// selfupdate.Options.Checksum.
+// do `sha256sum`) — e devolve só os bytes do hash.
 func baixarChecksum(ctx context.Context, url string) ([]byte, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {

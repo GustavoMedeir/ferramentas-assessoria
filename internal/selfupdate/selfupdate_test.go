@@ -2,10 +2,13 @@ package selfupdate
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -179,5 +182,100 @@ func TestBaixarChecksum(t *testing.T) {
 	}
 	if len(dados) != 32 { // sha256 = 32 bytes
 		t.Errorf("esperado hash de 32 bytes, veio %d", len(dados))
+	}
+}
+
+func TestNomeArquivoVersionado(t *testing.T) {
+	casos := map[string]string{
+		"v1.04.06": "FerramentasAssessoria-1.04.06.exe",
+		"1.04.06":  "FerramentasAssessoria-1.04.06.exe", // "v" é opcional, mesmo padrão de MaisNova
+	}
+	for versao, esperado := range casos {
+		if got := nomeArquivoVersionado(versao); got != esperado {
+			t.Errorf("nomeArquivoVersionado(%q) = %q, esperado %q", versao, got, esperado)
+		}
+	}
+}
+
+// TestBaixarEGravar cobre o caminho novo (baixa em Downloads com nome
+// versionado, nunca sobrescreve o executável em uso) — substitui os testes
+// antigos que exercitavam selfupdate.Apply() (biblioteca removida junto
+// com a troca in-place pela troca via Downloads, ver selfupdate.go).
+func TestBaixarEGravar(t *testing.T) {
+	conteudoExe := []byte("conteudo de mentira do executavel novo")
+	soma := sha256.Sum256(conteudoExe)
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/app.exe", func(w http.ResponseWriter, r *http.Request) { w.Write(conteudoExe) })
+	mux.HandleFunc("/app.exe.sha256", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(hex.EncodeToString(soma[:]) + "  FerramentasAssessoria-1.04.06.exe\n"))
+	})
+	srv := httptest.NewServer(mux)
+	defer srv.Close()
+
+	dir := t.TempDir()
+	info := ReleaseInfo{Versao: "v1.04.06", URLExe: srv.URL + "/app.exe", URLChecksum: srv.URL + "/app.exe.sha256"}
+
+	caminho, err := baixarEGravar(context.Background(), info, dir)
+	if err != nil {
+		t.Fatalf("baixarEGravar: %v", err)
+	}
+	esperado := filepath.Join(dir, "FerramentasAssessoria-1.04.06.exe")
+	if caminho != esperado {
+		t.Errorf("caminho = %q, esperado %q", caminho, esperado)
+	}
+	dados, err := os.ReadFile(caminho)
+	if err != nil {
+		t.Fatalf("ler arquivo baixado: %v", err)
+	}
+	if string(dados) != string(conteudoExe) {
+		t.Error("conteúdo gravado não bate com o baixado")
+	}
+}
+
+func TestBaixarEGravarRejeitaChecksumDivergente(t *testing.T) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/app.exe", func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("conteudo real")) })
+	mux.HandleFunc("/app.exe.sha256", func(w http.ResponseWriter, r *http.Request) {
+		// hash de outra coisa qualquer, não bate com o conteúdo acima
+		soma := sha256.Sum256([]byte("outra coisa"))
+		w.Write([]byte(hex.EncodeToString(soma[:])))
+	})
+	srv := httptest.NewServer(mux)
+	defer srv.Close()
+
+	dir := t.TempDir()
+	info := ReleaseInfo{Versao: "v1.04.06", URLExe: srv.URL + "/app.exe", URLChecksum: srv.URL + "/app.exe.sha256"}
+
+	if _, err := baixarEGravar(context.Background(), info, dir); err == nil {
+		t.Fatal("esperava erro de checksum divergente")
+	}
+	if entradas, _ := os.ReadDir(dir); len(entradas) != 0 {
+		t.Error("não deveria ter gravado nada no destino quando o checksum não bate")
+	}
+}
+
+func TestLimparVersoesAntigas(t *testing.T) {
+	dir := t.TempDir()
+	emUso := filepath.Join(dir, "FerramentasAssessoria-1.04.06.exe")
+	antiga := filepath.Join(dir, "FerramentasAssessoria-1.04.05.exe")
+	outroArquivo := filepath.Join(dir, "nao-mexe.txt")
+
+	for _, caminho := range []string{emUso, antiga, outroArquivo} {
+		if err := os.WriteFile(caminho, []byte("x"), 0644); err != nil {
+			t.Fatalf("preparar %s: %v", caminho, err)
+		}
+	}
+
+	limparVersoesAntigas(dir, emUso)
+
+	if _, err := os.Stat(emUso); err != nil {
+		t.Error("executável em uso não deveria ter sido apagado")
+	}
+	if _, err := os.Stat(antiga); !os.IsNotExist(err) {
+		t.Error("versão antiga deveria ter sido apagada")
+	}
+	if _, err := os.Stat(outroArquivo); err != nil {
+		t.Error("arquivo sem o prefixo do app não deveria ter sido tocado")
 	}
 }

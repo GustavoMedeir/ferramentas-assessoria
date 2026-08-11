@@ -105,6 +105,12 @@ func (a *App) startup(ctx context.Context) {
 			}
 		}()
 
+		// Apaga, em segundo plano, executáveis de atualizações anteriores
+		// deixados em Downloads (ver selfupdate.BaixarEAplicar/
+		// LimparVersoesAntigas) — sem isso, Downloads acumularia um .exe
+		// novo a cada atualização, pra sempre.
+		go selfupdate.LimparVersoesAntigas()
+
 		// A checagem acima roda só uma vez, ao abrir — não ajuda quem deixa o
 		// app aberto o dia inteiro sem reiniciar (comum: assessor abre de
 		// manhã e só fecha à noite). Esta outra roda em paralelo e repete
@@ -1572,12 +1578,13 @@ func (a *App) checarAtualizacao(ctx context.Context) AtualizacaoDTO {
 	return AtualizacaoDTO{Disponivel: true, Versao: info.Versao, Notas: info.Notas}
 }
 
-// AplicarAtualizacao baixa e instala a release encontrada pela última
-// checagem (automática ou via VerificarAtualizacao) e, se tudo der certo,
-// relança o app já atualizado e encerra esta instância — o assessor só vê
-// a janela fechar e reabrir. Se falhar antes de mexer no binário (download,
-// checksum), devolve o erro e o app continua rodando normalmente na versão
-// atual, sem risco pro que já estava aberto.
+// AplicarAtualizacao baixa a release encontrada pela última checagem
+// (automática ou via VerificarAtualizacao) pra dentro de Downloads e, se
+// tudo der certo, relança o app a partir dela e encerra esta instância — o
+// assessor só vê a janela fechar e reabrir. Se falhar no download/checksum,
+// devolve o erro e o app continua rodando normalmente na versão atual, sem
+// risco pro que já estava aberto — o executável em uso nunca é tocado (ver
+// selfupdate.BaixarEAplicar).
 func (a *App) AplicarAtualizacao() error {
 	info := a.atualizacaoDisponivel.Load()
 	if info == nil {
@@ -1588,16 +1595,16 @@ func (a *App) AplicarAtualizacao() error {
 	defer cancel()
 
 	runtime.EventsEmit(a.ctx, "atualizacao:aplicando")
-	if err := selfupdate.BaixarEAplicar(ctx, *info); err != nil {
+	caminhoNovo, err := selfupdate.BaixarEAplicar(ctx, *info)
+	if err != nil {
 		return err
 	}
 
-	// O binário em disco já é o novo — mesmo que o relançamento automático
-	// falhe por algum motivo (ex. antivírus segurando o arquivo por um
-	// instante), a próxima vez que o assessor abrir o .exe manualmente já
-	// vem atualizado. Por isso só loga, não retorna erro pro frontend.
-	if err := selfupdate.Relancar(); err != nil {
-		log.Println("selfupdate: binário atualizado, mas falha ao relançar automaticamente:", err)
+	// O executável novo já está em Downloads — mesmo que o relançamento
+	// automático falhe por algum motivo, ele continua lá disponível pro
+	// assessor abrir à mão. Por isso só loga, não retorna erro pro frontend.
+	if err := selfupdate.Relancar(caminhoNovo); err != nil {
+		log.Println("selfupdate: executável baixado, mas falha ao relançar automaticamente:", err)
 	}
 	runtime.Quit(a.ctx)
 	return nil
