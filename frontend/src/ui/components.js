@@ -60,24 +60,37 @@ export function phButton(texto, onClick, { wide = false } = {}) {
 
 // ---------------------------------------------------------------------------
 // Destaque dos placeholders na prévia da mensagem — única lógica duplicada
-// entre Go e JS do projeto (pequena e estável, 9 placeholders financeiros).
-// Fonte da verdade da lista/ordem: internal/rentabilidade/rentabilidade.go
-// (var placeholders). Os valores já vêm formatados em pt-BR pelo backend
-// (RegistroDTO.RentFmt/RentAFmt/...), então o JS só precisa fatiar o texto.
+// entre Go e JS do projeto (pequena e estável, 9 placeholders financeiros +
+// nome). Fonte da verdade da lista/ordem: internal/rentabilidade/
+// rentabilidade.go (var placeholders). Os valores financeiros já vêm
+// formatados em pt-BR pelo backend (RegistroDTO.RentFmt/RentAFmt/...), então
+// o JS só precisa fatiar o texto.
 // ---------------------------------------------------------------------------
 
+// Réplica de rentabilidade.PrimeiroNomeCapitalizado (Go) — usada pelo
+// placeholder _NomeM. Pequena e estável o bastante pra duplicar em vez de um
+// round-trip ao backend só pra montar a prévia.
+function primeiroNomeCapitalizado(nome) {
+    const primeiro = (nome || "").trim().split(/\s+/)[0] || "";
+    return primeiro ? primeiro[0].toUpperCase() + primeiro.slice(1).toLowerCase() : primeiro;
+}
+
+// "_NomeM" tem que vir antes de "_Nome" na lista: é prefixo dele, e a regex
+// tenta as alternativas na ordem em que aparecem — se "_Nome" viesse
+// primeiro, toda ocorrência de "_NomeM" casaria só o "_Nome" e deixaria um
+// "M" sobrando solto no texto.
 const PLACEHOLDER_ORDEM = [
     "_RentA", "_Rent12M", "_Rent",
     "_PercA", "_Perc12M", "_Perc",
     "_CDIA", "_CDI12M", "_CDI",
-    "_Nome",
+    "_NomeM", "_Nome",
 ];
 const PLACEHOLDER_RE = new RegExp(PLACEHOLDER_ORDEM.map((p) => p.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|"), "g");
 
-// _Nome não vem pré-formatado no RegistroDTO (o nome pode ser carregado
-// numa base de clientes depois dos registros já existirem, e não queremos
-// que fique desatualizado) — por isso é passado à parte, resolvido na hora
-// pelo chamador a partir de state.clientDB[registro.Codigo].
+// _Nome/_NomeM não vêm pré-formatados no RegistroDTO (o nome pode ser
+// carregado numa base de clientes depois dos registros já existirem, e não
+// queremos que fique desatualizado) — por isso são passados à parte,
+// resolvidos na hora pelo chamador a partir de state.clientDB[registro.Codigo].
 function valoresPlaceholder(registro, nome) {
     return {
         _Rent: registro.RentFmt,
@@ -90,6 +103,7 @@ function valoresPlaceholder(registro, nome) {
         _CDIA: registro.CDIAFmt,
         _CDI12M: registro.CDI12MFmt,
         _Nome: nome || "[Nome do cliente]",
+        _NomeM: nome ? primeiroNomeCapitalizado(nome) : "[Nome do cliente]",
     };
 }
 
@@ -118,15 +132,19 @@ export function renderMensagemComPills(container, template, registro, nome) {
     }
 }
 
-const PLACEHOLDER_NOME_RE = /_Nome/g;
+// "_NomeM" antes de "_Nome" — mesmo motivo do PLACEHOLDER_RE acima.
+const PLACEHOLDER_NOME_RE = /_NomeM|_Nome/g;
 
 // Versão do destaque de placeholders pro Modo Festas (aba Rentabilidade):
-// só o "_Nome" existe nesse modelo, sem depender de um Registro processado
-// (ao contrário de renderMensagemComPills, que precisa dos valores
-// financeiros do PDF).
+// só "_Nome"/"_NomeM" existem nesse modelo, sem depender de um Registro
+// processado (ao contrário de renderMensagemComPills, que precisa dos
+// valores financeiros do PDF).
 export function renderMensagemFestasComPills(container, template, nome) {
     clear(container);
-    const valor = nome || "[Nome do cliente]";
+    const valores = {
+        _Nome: nome || "[Nome do cliente]",
+        _NomeM: nome ? primeiroNomeCapitalizado(nome) : "[Nome do cliente]",
+    };
     let posicao = 0;
     PLACEHOLDER_NOME_RE.lastIndex = 0;
     let match;
@@ -134,7 +152,7 @@ export function renderMensagemFestasComPills(container, template, nome) {
         if (match.index > posicao) {
             container.appendChild(document.createTextNode(template.slice(posicao, match.index)));
         }
-        container.appendChild(el("span", { class: "pill-val", text: valor }));
+        container.appendChild(el("span", { class: "pill-val", text: valores[match[0]] }));
         posicao = match.index + match[0].length;
     }
     if (posicao < template.length) {

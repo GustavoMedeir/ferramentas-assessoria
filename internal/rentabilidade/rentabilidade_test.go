@@ -66,6 +66,21 @@ func TestMontarMensagem(t *testing.T) {
 	if comNome != "Olá Gustavo Teste, tudo bem?" {
 		t.Errorf("MontarMensagem com _Nome = %q, esperado inserir o nome", comNome)
 	}
+
+	// _NomeM é prefixo-sensível: "_Nome" não pode "roubar" o casamento e
+	// deixar um "M" sobrando.
+	comPrimeiroNome := MontarMensagem("Oi _NomeM, e _Nome também!", r, "GUSTAVO TESTE SILVA")
+	if comPrimeiroNome != "Oi Gustavo, e GUSTAVO TESTE SILVA também!" {
+		t.Errorf("MontarMensagem com _NomeM = %q, esperado primeiro nome capitalizado sem sobrar \"M\"", comPrimeiroNome)
+	}
+}
+
+func TestMontarMensagemFestas(t *testing.T) {
+	msg := MontarMensagemFestas("Feliz Natal, _NomeM! (assinado: _Nome)", "MARIA DA SILVA")
+	esperado := "Feliz Natal, Maria! (assinado: MARIA DA SILVA)"
+	if msg != esperado {
+		t.Errorf("MontarMensagemFestas = %q, esperado %q", msg, esperado)
+	}
 }
 
 func TestListarRegistrosOrdenacao(t *testing.T) {
@@ -295,5 +310,24 @@ func TestProcessarPastaComPDFReal(t *testing.T) {
 	registros, _ = ListarRegistros(db)
 	if len(registros) != 0 {
 		t.Errorf("esperava banco vazio após LimparBanco, veio %d", len(registros))
+	}
+}
+
+func TestPrimeiroNomeCapitalizado(t *testing.T) {
+	casos := []struct {
+		nome, esperado string
+	}{
+		{"JOAO DA SILVA SANTOS", "Joao"},
+		{"maria clara", "Maria"},
+		{"ÁLVARO", "Álvaro"},
+		{"  josé   ", "José"},
+		{"ana", "Ana"},
+		{"", ""},
+		{"   ", "   "}, // nada pra extrair — devolve como veio
+	}
+	for _, c := range casos {
+		if got := PrimeiroNomeCapitalizado(c.nome); got != c.esperado {
+			t.Errorf("PrimeiroNomeCapitalizado(%q) = %q, esperado %q", c.nome, got, c.esperado)
+		}
 	}
 }

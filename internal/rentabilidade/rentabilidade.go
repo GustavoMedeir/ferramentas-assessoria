@@ -13,6 +13,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"unicode"
 
 	_ "modernc.org/sqlite"
 
@@ -453,15 +454,14 @@ func ListarClientes(registros []Registro, nomes map[string]string, festasEnviado
 // ---------------------------------------------------------------------------
 
 // placeholders na ordem em que a regex deve tentar casar: "_Rent" é prefixo
-// de "_RentA" e "_Rent12M" (idem "_Perc"/"_CDI") — por isso vai do mais
-// longo pro mais curto, senão "_Rent12M"/"_RentA" virariam "<valor>12M"/
-// "<valor>A". "_Nome" não tem esse problema de prefixo, mas fica na lista
-// por completude.
+// de "_RentA" e "_Rent12M" (idem "_Perc"/"_CDI", e agora "_Nome"/"_NomeM")
+// — por isso vai do mais longo pro mais curto, senão "_Rent12M"/"_RentA"
+// virariam "<valor>12M"/"<valor>A", e "_NomeM" viraria "<nome>M".
 var placeholders = []string{
 	"_RentA", "_Rent12M", "_Rent",
 	"_PercA", "_Perc12M", "_Perc",
 	"_CDIA", "_CDI12M", "_CDI",
-	"_Nome",
+	"_NomeM", "_Nome",
 }
 
 var placeholderRe = regexp.MustCompile(strings.Join(func() []string {
@@ -475,6 +475,9 @@ var placeholderRe = regexp.MustCompile(strings.Join(func() []string {
 // ValoresPlaceholder devolve o valor formatado de cada placeholder pro
 // registro dado. nome vem da base de clientes (carregada à parte, por
 // código da conta) — pode vir vazio se o cliente não estiver na base.
+// "_NomeM" é o primeiro nome capitalizado (ver PrimeiroNomeCapitalizado) —
+// útil pra mensagens mais informais, sem precisar reescrever o modelo pra
+// cada cliente.
 func ValoresPlaceholder(r Registro, nome string) map[string]string {
 	return map[string]string{
 		"_Rent":    pdfreport.FormatarReais(r.GanhoMesReais),
@@ -487,6 +490,7 @@ func ValoresPlaceholder(r Registro, nome string) map[string]string {
 		"_CDIA":    pdfreport.FormatarPercentual(r.CDIAnoPct),
 		"_CDI12M":  pdfreport.FormatarPercentual(r.CDI12MPct),
 		"_Nome":    nome,
+		"_NomeM":   PrimeiroNomeCapitalizado(nome),
 	}
 }
 
@@ -499,11 +503,29 @@ func MontarMensagem(template string, r Registro, nome string) string {
 	})
 }
 
-// MontarMensagemFestas substitui só o "_Nome" do modelo — usado pelo Modo
-// Festas, que também vale pra clientes sem relatório processado (sem dados
-// financeiros pra preencher os outros placeholders).
+// MontarMensagemFestas substitui "_Nome"/"_NomeM" do modelo — usado pelo
+// Modo Festas, que também vale pra clientes sem relatório processado (sem
+// dados financeiros pra preencher os outros placeholders). "_NomeM" precisa
+// ser trocado ANTES de "_Nome" — é prefixo dele, e strings.ReplaceAll na
+// ordem errada faria "_NomeM" virar "<nome>M".
 func MontarMensagemFestas(template, nome string) string {
-	return strings.ReplaceAll(template, "_Nome", nome)
+	texto := strings.ReplaceAll(template, "_NomeM", PrimeiroNomeCapitalizado(nome))
+	return strings.ReplaceAll(texto, "_Nome", nome)
+}
+
+// PrimeiroNomeCapitalizado devolve só o primeiro nome, com a primeira letra
+// maiúscula e o resto minúsculo (ex.: "JOAO DA SILVA" -> "Joao") — usado
+// pela preferência "Só o primeiro nome" (Configurações > Rentabilidade). O
+// cadastro costuma vir todo em maiúsculas do CSV da base de clientes (ver
+// internal/clientdb), sem nenhuma normalização de capitalização.
+func PrimeiroNomeCapitalizado(nome string) string {
+	campos := strings.Fields(nome)
+	if len(campos) == 0 {
+		return nome
+	}
+	letras := []rune(strings.ToLower(campos[0]))
+	letras[0] = unicode.ToUpper(letras[0])
+	return string(letras)
 }
 
 // ---------------------------------------------------------------------------

@@ -227,8 +227,8 @@ function montarCorpoModelo(corpo) {
         legenda.appendChild(phButton(doze, () => inserirPlaceholder(doze)));
     }
     legenda.appendChild(el("span", { class: "rlbl", text: "Nome do cliente" }));
-    legenda.appendChild(phButton("_Nome", () => inserirPlaceholder("_Nome"), { wide: true }));
-    legenda.appendChild(el("span", {}));
+    legenda.appendChild(phButton("_Nome", () => inserirPlaceholder("_Nome")));
+    legenda.appendChild(phButton("_NomeM", () => inserirPlaceholder("_NomeM")));
     legenda.appendChild(el("span", {}));
     corpo.appendChild(legenda);
 
@@ -254,13 +254,13 @@ function montarCorpoModelo(corpo) {
     corpo.appendChild(el("div", { class: "rfoot" }, [btnSalvar]));
 }
 
-// Modelo do Modo Festas: só existe o placeholder _Nome (sem dados
+// Modelo do Modo Festas: só existem os placeholders _Nome/_NomeM (sem dados
 // financeiros, já que também vale pra clientes sem relatório processado).
 function montarCorpoModeloFestas(corpo) {
     const legenda = el("div", { class: "legend" });
     legenda.appendChild(el("span", { class: "rlbl", text: "Nome do cliente" }));
-    legenda.appendChild(phButton("_Nome", () => inserirPlaceholder("_Nome"), { wide: true }));
-    legenda.appendChild(el("span", {}));
+    legenda.appendChild(phButton("_Nome", () => inserirPlaceholder("_Nome")));
+    legenda.appendChild(phButton("_NomeM", () => inserirPlaceholder("_NomeM")));
     legenda.appendChild(el("span", {}));
     corpo.appendChild(legenda);
 
