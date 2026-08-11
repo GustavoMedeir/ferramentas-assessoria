@@ -20,9 +20,10 @@ export const state = {
     emailTipo: null, // string | null — CategoriaDTO.Label
     blocosEmail: [], // {id, valores: {}} — todas do mesmo produto/tipo acima
     blocosDesagio: [], // {id, titulo, valorAtual, valorSaida, extras: {colunaId: "texto"}}
-    // Colunas extras da Tabela de Deságio (texto livre, uma por título) —
-    // {id, nome, apos}, onde `apos` é a chave da coluna (fixa ou extra) logo
-    // à esquerda da qual ela deve aparecer. Ver frontend/src/tabs/desagio.js.
+    // Colunas extras da Tabela de Deságio, uma por título — {id, nome, apos,
+    // tipo}: `apos` é a chave da coluna (fixa ou extra) logo à esquerda da
+    // qual ela deve aparecer; `tipo` é "texto" | "reais" | "percentual" e
+    // decide a máscara/formatação da célula. Ver frontend/src/tabs/desagio.js.
     colunasExtrasDesagio: [],
     calculadora: {}, // {"cartaoId.campo": "texto digitado"} — persiste ao trocar de aba
     previdenciaria: {}, // {"prev.campo": "texto digitado"} — persiste ao trocar de aba

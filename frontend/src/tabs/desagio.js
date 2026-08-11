@@ -1,7 +1,13 @@
 import { state, novoBlocoId } from "../state.js";
 import { el, clear, btn } from "../ui/components.js";
 import * as icons from "../ui/icons.js";
-import { parseNumeroPtBR, formatarReais, formatarPercentual } from "../util/numeros.js";
+import {
+    parseNumeroPtBR,
+    formatarReais,
+    formatarPercentual,
+    formatarMilharEnquantoDigita,
+    formatarPercentualEnquantoDigita,
+} from "../util/numeros.js";
 import { SalvarImagemPNG } from "../../wailsjs/go/main/App.js";
 
 let refs = {};
@@ -23,6 +29,16 @@ const COLUNAS_FIXAS = [
     { chave: "desagioPct", nome: "Deságio (%)" },
 ];
 const COR_CABECALHO = "#047857"; // --primary-600 do acento Esmeralda (canvas de exportação não lê variável CSS)
+
+// Formatação de uma coluna extra — "texto" não mexe no que foi digitado;
+// "reais"/"percentual" reusam a mesma máscara pt-BR (milhar ao digitar,
+// "R$"/"%" no lugar certo) já usada nos campos de calculadora do app (ver
+// frontend/src/util/rendaFixa.js), só que aplicada a uma célula da tabela.
+const TIPOS_COLUNA = [
+    { id: "texto", label: "Texto" },
+    { id: "reais", label: "R$" },
+    { id: "percentual", label: "%" },
+];
 
 const CRITERIOS_ORDEM = [
     { id: "nome", label: "Nome" },
@@ -210,8 +226,13 @@ function totais() {
     let vs = 0;
     for (const linha of state.blocosDesagio) {
         const c = camposCalculados(linha);
-        va += c.valorAtual ?? 0;
-        vs += c.valorSaida ?? 0;
+        // Título sem os dois valores preenchidos ainda não tem deságio
+        // calculado (camposCalculados devolve null) — fica de fora da soma
+        // em vez de entrar como valorSaida=0, que inflaria o total como se
+        // aquele título tivesse perdido 100% do valor.
+        if (c.valorAtual === null || c.valorSaida === null) continue;
+        va += c.valorAtual;
+        vs += c.valorSaida;
     }
     const dr = vs - va;
     const dp = va !== 0 ? (dr / va) * 100 : null;
@@ -242,6 +263,19 @@ function renderCabecalho() {
                 info.nome = input.value;
             });
             linhaTh.appendChild(input);
+
+            const selectTipo = el("select", { class: "des-th-tipo", title: "Formato dos valores desta coluna" });
+            for (const t of TIPOS_COLUNA) {
+                const opt = el("option", { value: t.id, text: t.label });
+                if (t.id === info.tipo) opt.selected = true;
+                selectTipo.appendChild(opt);
+            }
+            selectTipo.addEventListener("change", () => {
+                info.tipo = selectTipo.value;
+                renderCorpo();
+            });
+            linhaTh.appendChild(selectTipo);
+
             linhaTh.appendChild(iconeCabecalho(icons.iconFechar, "Remover coluna", () => removerColuna(info.id), "des-th-icon-rm"));
         } else {
             linhaTh.appendChild(el("span", { class: "des-th-name", text: info.nome }));
@@ -258,7 +292,7 @@ function renderCabecalho() {
 
 function adicionarColuna(aposChave) {
     const id = "extra" + novoBlocoId();
-    state.colunasExtrasDesagio.push({ id, nome: "Nova coluna", apos: aposChave });
+    state.colunasExtrasDesagio.push({ id, nome: "Nova coluna", apos: aposChave, tipo: "texto" });
     renderCabecalho();
     renderCorpo();
     const posicao = layoutColunas().indexOf(id);
@@ -284,11 +318,37 @@ function removerColuna(id) {
 // ---------------------------------------------------------------------------
 // Corpo
 // ---------------------------------------------------------------------------
-function celulaEditavel(valor, placeholder, aoDigitar, aoSair) {
+function celulaEditavel(valor, placeholder, aoDigitar, aoSair, tipo = "texto") {
     const input = el("input", { class: "des-cell-input", type: "text", placeholder: placeholder || "" });
     input.value = valor || "";
-    input.addEventListener("input", () => aoDigitar(input.value));
-    input.addEventListener("blur", aoSair);
+
+    input.addEventListener("input", () => {
+        if (tipo === "reais" || tipo === "percentual") {
+            // Mesma técnica de máscara-ao-digitar usada nos campos de
+            // calculadora (ver util/rendaFixa.js): reformata só a parte
+            // digitada, preservando a posição do cursor em relação ao fim.
+            const distanciaDoFim = input.value.length - input.selectionStart;
+            input.value = tipo === "reais" ? formatarMilharEnquantoDigita(input.value) : formatarPercentualEnquantoDigita(input.value);
+            const pos = Math.max(0, input.value.length - distanciaDoFim);
+            input.setSelectionRange(pos, pos);
+        }
+        aoDigitar(input.value);
+    });
+    if (tipo === "reais") {
+        input.addEventListener("focus", () => {
+            input.value = input.value.replace(/^R\$\s*/, "");
+        });
+    }
+    input.addEventListener("blur", () => {
+        if (tipo === "reais" || tipo === "percentual") {
+            const numero = parseNumeroPtBR(input.value);
+            if (numero !== null) {
+                input.value = tipo === "reais" ? formatarReais(numero) : formatarPercentual(numero);
+                aoDigitar(input.value);
+            }
+        }
+        aoSair();
+    });
     return el("td", {}, [input]);
 }
 
@@ -342,14 +402,17 @@ function renderLinha(linha) {
             const c = camposCalculados(linha);
             tr.appendChild(celulaTexto(chave === "desagioReais" ? formatarValorOuTraco(c.desagioReais, formatarReais) : formatarValorOuTraco(c.desagioPct, formatarPercentual), chave));
         } else {
+            const tipoColuna = colunaInfo(chave).tipo;
+            const placeholder = tipoColuna === "reais" ? "Ex: 1.234,56" : tipoColuna === "percentual" ? "Ex: 12,34" : "—";
             tr.appendChild(
                 celulaEditavel(
                     linha.extras[chave],
-                    "—",
+                    placeholder,
                     (v) => {
                         linha.extras[chave] = v;
                     },
-                    recalcularOrdemSeMudou
+                    recalcularOrdemSeMudou,
+                    tipoColuna
                 )
             );
         }
@@ -367,6 +430,21 @@ function renderLinha(linha) {
 
 function formatarValorOuTraco(valor, formatador) {
     return valor !== null ? formatador(valor) : "—";
+}
+
+// Texto de uma célula de coluna extra pra exportação — colunas "reais"/
+// "percentual" já chegam formatadas na célula (reformatadas no blur, ver
+// celulaEditavel), mas reformata de novo aqui por segurança (ex.: campo
+// ainda focado, sem ter passado pelo blur, no instante do export).
+function textoExtraFormatado(linha, chave) {
+    const bruto = linha.extras[chave]?.trim();
+    if (!bruto) return "—";
+    const tipo = colunaInfo(chave).tipo;
+    if (tipo === "reais" || tipo === "percentual") {
+        const numero = parseNumeroPtBR(bruto);
+        if (numero !== null) return tipo === "reais" ? formatarReais(numero) : formatarPercentual(numero);
+    }
+    return bruto;
 }
 
 function linhaTotal() {
@@ -459,7 +537,7 @@ function desenharCanvasExport() {
             if (chave === "valorSaida") return formatarValorOuTraco(c.valorSaida, formatarReais);
             if (chave === "desagioReais") return formatarValorOuTraco(c.desagioReais, formatarReais);
             if (chave === "desagioPct") return formatarValorOuTraco(c.desagioPct, formatarPercentual);
-            return linha.extras[chave]?.trim() || "—";
+            return textoExtraFormatado(linha, chave);
         });
     });
 

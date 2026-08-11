@@ -104,7 +104,46 @@ func (a *App) startup(ctx context.Context) {
 				runtime.EventsEmit(a.ctx, "atualizacao:disponivel", dto)
 			}
 		}()
+
+		// A checagem acima roda só uma vez, ao abrir — não ajuda quem deixa o
+		// app aberto o dia inteiro sem reiniciar (comum: assessor abre de
+		// manhã e só fecha à noite). Esta outra roda em paralelo e repete
+		// todo dia às horaChecagemDiaria, enquanto o app continuar aberto.
+		go a.loopChecagemDiaria(ctx)
 	}
+}
+
+// horaChecagemDiaria é a hora (0-23, horário local da máquina) da checagem
+// automática recorrente — ver loopChecagemDiaria.
+const horaChecagemDiaria = 18
+
+// loopChecagemDiaria verifica atualização todo dia às horaChecagemDiaria,
+// enquanto o app estiver aberto. Recalcula a duração até a próxima checagem
+// a cada volta (em vez de um time.Ticker de 24h fixas) pra não acumular
+// deriva em mudança de horário de verão ou fuso.
+func (a *App) loopChecagemDiaria(ctx context.Context) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-time.After(duracaoAteProximaChecagem(time.Now())):
+		}
+		if dto := a.checarAtualizacao(ctx); dto.Disponivel {
+			runtime.EventsEmit(a.ctx, "atualizacao:disponivel", dto)
+		}
+	}
+}
+
+// duracaoAteProximaChecagem calcula quanto falta até horaChecagemDiaria:00
+// (horário local) — hoje, se esse horário ainda não passou; amanhã, caso
+// contrário (inclusive se `agora` for exatamente esse horário, pra não
+// disparar duas vezes seguidas no instante exato).
+func duracaoAteProximaChecagem(agora time.Time) time.Duration {
+	proxima := time.Date(agora.Year(), agora.Month(), agora.Day(), horaChecagemDiaria, 0, 0, 0, agora.Location())
+	if !proxima.After(agora) {
+		proxima = proxima.AddDate(0, 0, 1)
+	}
+	return proxima.Sub(agora)
 }
 
 func (a *App) shutdown(_ context.Context) {

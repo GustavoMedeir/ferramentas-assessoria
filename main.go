@@ -10,6 +10,8 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
+
+	"rentabilidade/internal/selfupdate"
 )
 
 //go:embed all:frontend/dist
@@ -31,6 +33,15 @@ var assets embed.FS
 var Version = "dev"
 
 func main() {
+	// Esta execução pode ser a instância ajudante que a própria atualização
+	// automática sobe pra relançar o app (ver
+	// internal/selfupdate/relancar_windows.go) — nesse caso ela só espera e
+	// reabre o executável de verdade, sem inicializar o Wails/janela nem
+	// tocar no log.
+	if selfupdate.ExecutarSeAjudanteDeRelancamento(os.Args) {
+		return
+	}
+
 	redirecionarStdioParaArquivo()
 
 	// Create an instance of the app structure

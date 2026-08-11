@@ -28,11 +28,13 @@ atualizado.
 ## Atualizações automáticas
 
 O app se atualiza sozinho: alguns segundos depois de abrir, ele verifica em segundo plano se
-há uma release mais nova aqui no repositório. Havendo, aparece **"Atualização disponível"** na
-barra lateral com as notas da versão; ao confirmar, o app baixa o novo executável, valida o
-checksum SHA-256, se substitui e reabre — sem instalador, sem permissão de administrador e
-sem perder configurações. Se algo falhar no meio, ele continua na versão atual (a troca só
-acontece depois do download ser validado).
+há uma release mais nova aqui no repositório, e repete essa checagem todo dia às 18h (horário
+da máquina) enquanto continuar aberto — cobre quem deixa o app aberto o dia inteiro sem
+reiniciar. Havendo atualização, aparece **"Atualização disponível"** na barra lateral com as
+notas da versão; ao confirmar, o app baixa o novo executável, valida o checksum SHA-256, se
+substitui e reabre — sem instalador, sem permissão de administrador e sem perder
+configurações. Se algo falhar no meio, ele continua na versão atual (a troca só acontece
+depois do download ser validado).
 
 Também é possível checar na hora em **Configurações → Sobre**, onde fica a versão instalada.
 
