@@ -35,8 +35,8 @@ const COR_CABECALHO = "#047857"; // --primary-600 do acento Esmeralda (canvas de
 // "R$"/"%" no lugar certo) já usada nos campos de calculadora do app (ver
 // frontend/src/util/rendaFixa.js), só que aplicada a uma célula da tabela.
 const TIPOS_COLUNA = [
-    { id: "texto", label: "Texto" },
-    { id: "reais", label: "R$" },
+    { id: "texto", label: "T" },
+    { id: "reais", label: "$" },
     { id: "percentual", label: "%" },
 ];
 
@@ -383,7 +383,8 @@ function renderLinha(linha) {
                         linha.valorAtual = v;
                         atualizarComputadas(linha);
                     },
-                    recalcularOrdemSeMudou
+                    recalcularOrdemSeMudou,
+                    "reais"
                 )
             );
         } else if (chave === "valorSaida") {
@@ -395,7 +396,8 @@ function renderLinha(linha) {
                         linha.valorSaida = v;
                         atualizarComputadas(linha);
                     },
-                    recalcularOrdemSeMudou
+                    recalcularOrdemSeMudou,
+                    "reais"
                 )
             );
         } else if (chave === "desagioReais" || chave === "desagioPct") {
